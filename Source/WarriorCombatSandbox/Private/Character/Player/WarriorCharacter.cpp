@@ -1,7 +1,7 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 
-#include "Character/WarriorCharacter.h"
+#include "Character/Player/WarriorCharacter.h"
 #include "Engine/LocalPlayer.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
@@ -49,6 +49,9 @@ AWarriorCharacter::AWarriorCharacter()
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName); // Attach the camera to the end of the boom
 	FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
 
+	// Attach combat and health components
+	CombatComponent = CreateDefaultSubobject<UCombatComponent>(TEXT("CombatComponent"));
+	HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComponent"));
 }
 
 
@@ -90,6 +93,36 @@ void AWarriorCharacter::Look(const FInputActionValue& Value)
 
 	// Route the input
 	DoLook(LookAxisVector.X, LookAxisVector.Y);
+}
+
+void AWarriorCharacter::Sprint(const FInputActionValue& Value)
+{
+	// stub
+}
+
+void AWarriorCharacter::HandleBasicAttack()
+{
+	// stub
+}
+
+void AWarriorCharacter::HandleHeavyAttack()
+{
+	// stub
+}
+
+void AWarriorCharacter::HandleDefenseSkill()
+{
+	// stub
+}
+
+void AWarriorCharacter::HandleInterrupt()
+{
+	// stub
+}
+
+void AWarriorCharacter::HandleUltimate()
+{
+	// stub
 }
 
 void AWarriorCharacter::DoMove(float Right, float Forward)

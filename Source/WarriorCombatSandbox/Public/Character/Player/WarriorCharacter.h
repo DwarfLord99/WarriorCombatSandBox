@@ -5,6 +5,8 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "Logging/LogMacros.h"
+#include "Character/Components/HealthComponent.h"
+#include "Combat/CombatComponent.h"
 #include "WarriorCharacter.generated.h"
 
 class USpringArmComponent;
@@ -27,6 +29,14 @@ class WARRIORCOMBATSANDBOX_API AWarriorCharacter : public ACharacter
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	UCameraComponent* FollowCamera;
 
+	// Combat Component
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	UCombatComponent* CombatComponent;
+
+	// Health Component
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Health, meta = (AllowPrivateAccess = "true"))
+	UHealthComponent* HealthComponent;
+
 protected:
 
 	// Jump Input Action
@@ -45,6 +55,30 @@ protected:
 	UPROPERTY(EditAnywhere, Category = Input)
 	UInputAction* MouseLookAction;
 
+	// Sprint Input Action
+	UPROPERTY(EditAnywhere, Category = Input)
+	UInputAction* SprintAction;
+
+	// Basic Attack Input Action
+	UPROPERTY(EditAnywhere, Category = Input)
+	UInputAction* AttackAction;
+
+	// Heavy Attack Input Action
+	UPROPERTY(EditAnywhere, Category = Input)
+	UInputAction* HeavyAttackAction;
+
+	// Defense Skill Input Action
+	UPROPERTY(EditAnywhere, Category = Input)
+	UInputAction* DefenseSkillAction;
+
+	// Interrupt Input Action
+	UPROPERTY(EditAnywhere, Category = Input)
+	UInputAction* InterruptAction;
+
+	// Ultimate Input Action
+	UPROPERTY(EditAnywhere, Category = Input)
+	UInputAction* UltimateAction;
+
 public:
 
 	// Sets default values for this character's properties
@@ -62,6 +96,24 @@ protected:
 
 	// Look input
 	void Look(const FInputActionValue& Value);
+
+	// Sprint input
+	void Sprint(const FInputActionValue& Value);
+
+	// Basic Attack
+	void HandleBasicAttack();
+
+	// Heavy Attack
+	void HandleHeavyAttack();
+
+	// Defense Skill
+	void HandleDefenseSkill();
+
+	// Interrupt Skill
+	void HandleInterrupt();
+
+	// Ultimate Skill
+	void HandleUltimate();
 
 public:	
 

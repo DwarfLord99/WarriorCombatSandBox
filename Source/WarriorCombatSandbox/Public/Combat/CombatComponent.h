@@ -5,6 +5,8 @@
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "AbilityData.h"
+#include "Combat/Damageable.h"
+#include "Weapons/Weapon.h"
 #include "CombatComponent.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnRageChanged, float, NewRage, float, Delta);
@@ -35,15 +37,15 @@ protected:
 	void OnAttackMontageEnded(UAnimMontage* Montage, bool bInterrupted);
 
 	UFUNCTION(BlueprintCallable, Category = "Combat")
-	void OnAttackHit();
-
-	UFUNCTION(BlueprintCallable, Category = "Combat")
 	void ApplyDamage(AActor* Target, float DamageAmount);
 
 	UFUNCTION(BlueprintCallable, Category = "Combat")
 	AActor* GetHitTarget();
 
 	bool bIsAttacking = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat")
+	AWeapon* EquippedWeapon;
 
 public:	
 	// Called every frame
@@ -53,5 +55,14 @@ public:
 	FOnRageChanged OnRageChanged;
 
 	UFUNCTION(BlueprintCallable, Category = "Combat")
+	void OnAttackHit();
+
+	UFUNCTION(BlueprintCallable, Category = "Combat")
 	void TryUseAbility(UAbilityData* AbilityData);
+
+	UFUNCTION(BlueprintCallable, Category = "Combat")
+	float GetCurrentRage() const { return CurrentRage; }
+
+	UFUNCTION(BlueprintCallable, Category = "Combat")
+	float GetMaxRage() const { return MaxRage; }
 };

@@ -8,6 +8,7 @@
 #include "Character/Components/HealthComponent.h"
 #include "Combat/CombatComponent.h"
 #include "Combat/AbilityData.h"
+#include "Weapons/Weapon.h"
 #include "UI/PlayerHUD.h"
 #include "WarriorCharacter.generated.h"
 
@@ -100,6 +101,14 @@ protected:
 	// Ultimate Data
 	UPROPERTY(EditAnywhere, Category = Abilities)
 	UAbilityData* UltimateData;
+
+	// Weapon
+	UPROPERTY(EditAnywhere, Category = Equipment)
+	TSubclassOf<AWeapon> WeaponClass;
+
+	// Equipped Weapon
+	UPROPERTY()
+	AWeapon* EquippedWeapon;
 
 	// Health Data
 	UPROPERTY(EditDefaultsOnly, Category = UI)

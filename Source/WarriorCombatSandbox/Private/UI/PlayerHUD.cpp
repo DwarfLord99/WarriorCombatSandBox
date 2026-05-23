@@ -8,6 +8,7 @@ void UPlayerHUD::UpdateHealth(float Current, float Max)
 	if (HealthBar)
 	{
 		float HealthPercent = Current / Max;
+		UE_LOG(LogTemp, Log, TEXT("Updating Health: Current = %f, Max = %f, Percent = %f"), Current, Max, HealthPercent);
 		HealthBar->SetPercent(HealthPercent);
 	}
 }

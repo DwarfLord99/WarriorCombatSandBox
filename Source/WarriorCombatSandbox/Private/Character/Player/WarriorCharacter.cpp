@@ -129,6 +129,20 @@ void AWarriorCharacter::BeginPlay()
 		PlayerHUD->UpdateHealth(HealthComponent->GetCurrentHealth(), HealthComponent->GetMaxHealth());
 	}
 
+	// Set up weapon
+	if (WeaponClass)
+	{
+		EquippedWeapon = GetWorld()->SpawnActor<AWeapon>(WeaponClass);
+
+		if (EquippedWeapon)
+		{
+			EquippedWeapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, TEXT("WeaponSocket"));
+		}
+		else
+		{
+			UE_LOG(LogWarriorCharacter, Error, TEXT("'%s' Failed to spawn equipped weapon!"), *GetNameSafe(this));
+		}
+	}
 }
 
 void AWarriorCharacter::Move(const FInputActionValue& Value)
@@ -198,7 +212,7 @@ void AWarriorCharacter::HandleHealthChanged(float Current, float Max)
 {
 	if (PlayerHUD)
 	{
-		PlayerHUD->UpdateHealth(Current, Max);
+		PlayerHUD->UpdateHealth(Current, HealthComponent->GetMaxHealth());
 	}
 }
 
@@ -206,7 +220,7 @@ void AWarriorCharacter::HandleRageChanged(float Current, float Max)
 {
 	if (PlayerHUD)
 	{
-		PlayerHUD->UpdateRage(Current, Max);
+		PlayerHUD->UpdateRage(Current, CombatComponent->GetMaxRage());
 	}
 }
 

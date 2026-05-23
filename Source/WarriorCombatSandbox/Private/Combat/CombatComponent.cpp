@@ -3,6 +3,7 @@
 #include "Combat/CombatComponent.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Character/Components/HealthComponent.h"
 #include "Animation/AnimInstance.h"
 
 // Sets default values for this component's properties
@@ -40,15 +41,6 @@ void UCombatComponent::TryUseAbility(UAbilityData* AbilityData)
 		return;
 	}
 
-	CurrentAbilityData = AbilityData;
-
-	CurrentRage -= AbilityData->RageCost;
-	CurrentRage += AbilityData->RageGenerated;
-
-	CurrentRage = FMath::Clamp(CurrentRage, 0.f, MaxRage);
-
-	OnRageChanged.Broadcast(CurrentRage, AbilityData->RageGenerated);
-
 	ACharacter* OwnerCharacter = Cast<ACharacter>(GetOwner());
 	if (OwnerCharacter && OwnerCharacter->GetCharacterMovement()->IsFalling())
 	{
@@ -56,9 +48,22 @@ void UCombatComponent::TryUseAbility(UAbilityData* AbilityData)
 		return;
 	}
 
+	CurrentAbilityData = AbilityData;	
+
 	if (OwnerCharacter && AbilityData->AttackMontage && !bIsAttacking)
 	{
 		bIsAttacking = true;
+
+		if (EquippedWeapon)
+			EquippedWeapon->StartTrace();
+
+		CurrentRage -= AbilityData->RageCost;
+		CurrentRage += AbilityData->RageGenerated;
+
+		CurrentRage = FMath::Clamp(CurrentRage, 0.f, MaxRage);
+
+		OnRageChanged.Broadcast(CurrentRage, AbilityData->RageGenerated);
+
 		UAnimInstance* AnimInstance = OwnerCharacter->GetMesh()->GetAnimInstance();
 
 		if (AnimInstance)
@@ -82,26 +87,67 @@ void UCombatComponent::OnAttackMontageEnded(UAnimMontage* Montage, bool bInterru
 	{
 		OwnerCharacter->GetCharacterMovement()->SetMovementMode(MOVE_Walking);
 		bIsAttacking = false;
+
+		if (EquippedWeapon)
+			EquippedWeapon->EndTrace();
 	}
 }
 
 void UCombatComponent::OnAttackHit()
 {
 	AActor* HitTarget = GetHitTarget();
-	if (HitTarget)
-	{
-		ApplyDamage(HitTarget, CurrentAbilityData->DamageAmount);
-	}
+	if (!HitTarget)
+		return;
+
+	ApplyDamage(HitTarget, CurrentAbilityData ? CurrentAbilityData->DamageAmount : 10.f);
+
+	UE_LOG(LogTemp, Log, TEXT("Hit target: %s"), *HitTarget->GetName());
 }
 
 void UCombatComponent::ApplyDamage(AActor* Target, float DamageAmount)
 {
-	// stub
+	if (!Target) return;
+
+	UHealthComponent* Health = Target->FindComponentByClass<UHealthComponent>();
+	if (Health)
+	{
+		Health->ApplyDamage(DamageAmount);
+	}
 }
 
 AActor* UCombatComponent::GetHitTarget()
 {
-	return nullptr;
+	//ACharacter* OwnerCharacter = Cast<ACharacter>(GetOwner());
+	//if (!OwnerCharacter)
+	//	return nullptr;
+
+	//FVector Start = OwnerCharacter->GetActorLocation();
+	//FVector Forward = OwnerCharacter->GetActorForwardVector();
+	//FVector End = Start + Forward * 150.f; // attack range
+
+	//FHitResult Hit;
+	//FCollisionQueryParams Params;
+	//Params.AddIgnoredActor(OwnerCharacter);
+
+	//bool bHit = GetWorld()->LineTraceSingleByChannel(
+	//	Hit,
+	//	Start,
+	//	End,
+	//	ECC_Pawn,
+	//	Params
+	//);
+
+	//if (bHit)
+	//{
+	//	return Hit.GetActor();
+	//}
+
+	//return nullptr;
+
+	if (!EquippedWeapon)
+		return nullptr;
+
+	return EquippedWeapon->PerformTrace();
 }
 
 

@@ -70,11 +70,65 @@ void AWarriorCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 
 		// Looking
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AWarriorCharacter::Look);
+
+		// Sprinting
+		EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Triggered, this, &AWarriorCharacter::Sprint);
+
+		// Combat
+		EnhancedInputComponent->BindAction(BasicAttackAction, ETriggerEvent::Triggered, this, &AWarriorCharacter::DoAttack);
+		EnhancedInputComponent->BindAction(HeavyAttackAction, ETriggerEvent::Triggered, this, &AWarriorCharacter::HandleHeavyAttack);
+		EnhancedInputComponent->BindAction(DefenseSkillAction, ETriggerEvent::Triggered, this, &AWarriorCharacter::HandleDefenseSkill);
+		EnhancedInputComponent->BindAction(InterruptAction, ETriggerEvent::Triggered, this, &AWarriorCharacter::HandleInterrupt);
+		EnhancedInputComponent->BindAction(UltimateAction, ETriggerEvent::Triggered, this, &AWarriorCharacter::HandleUltimate);
 	}
 	else
 	{
 		UE_LOG(LogWarriorCharacter, Error, TEXT("'%s' Failed to find an Enhanced Input component!"), *GetNameSafe(this));
 	}
+}
+
+void AWarriorCharacter::BeginPlay()
+{
+	Super::BeginPlay();
+
+	if (HUDClass)
+	{
+		PlayerHUD = CreateWidget<UPlayerHUD>(GetWorld(), HUDClass);
+
+		if (PlayerHUD)
+		{
+			PlayerHUD->AddToViewport();
+		}
+		else
+		{
+			UE_LOG(LogWarriorCharacter, Error, TEXT("'%s' Failed to create Player HUD!"), *GetNameSafe(this));
+		}
+	}
+
+	if (HealthComponent)
+	{
+		HealthComponent->OnHealthChanged.AddDynamic(this, &AWarriorCharacter::HandleHealthChanged);
+	}
+	else
+	{
+		UE_LOG(LogWarriorCharacter, Error, TEXT("'%s' Failed to find Health Component!"), *GetNameSafe(this));
+	}
+
+	if (CombatComponent)
+	{
+		CombatComponent->OnRageChanged.AddDynamic(this, &AWarriorCharacter::HandleRageChanged);
+	}
+	else
+	{
+		UE_LOG(LogWarriorCharacter, Error, TEXT("'%s' Failed to find Combat Component!"), *GetNameSafe(this));
+	}
+
+	// Update the HUD with the initial health values
+	if (PlayerHUD && HealthComponent)
+	{
+		PlayerHUD->UpdateHealth(HealthComponent->GetCurrentHealth(), HealthComponent->GetMaxHealth());
+	}
+
 }
 
 void AWarriorCharacter::Move(const FInputActionValue& Value)
@@ -102,27 +156,58 @@ void AWarriorCharacter::Sprint(const FInputActionValue& Value)
 
 void AWarriorCharacter::HandleBasicAttack()
 {
-	// stub
+	if (CombatComponent && BasicAttackData)
+	{
+		CombatComponent->TryUseAbility(BasicAttackData);
+	}
 }
 
 void AWarriorCharacter::HandleHeavyAttack()
 {
-	// stub
+	if (CombatComponent && HeavyAttackData)
+	{
+		CombatComponent->TryUseAbility(HeavyAttackData);
+	}
 }
 
 void AWarriorCharacter::HandleDefenseSkill()
 {
-	// stub
+	if (CombatComponent && DefenseSkillData)
+	{
+		CombatComponent->TryUseAbility(DefenseSkillData);
+	}
 }
 
 void AWarriorCharacter::HandleInterrupt()
 {
-	// stub
+	if (CombatComponent && InterruptData)
+	{
+		CombatComponent->TryUseAbility(InterruptData);
+	}
 }
 
 void AWarriorCharacter::HandleUltimate()
 {
-	// stub
+	if (CombatComponent && UltimateData)
+	{
+		CombatComponent->TryUseAbility(UltimateData);
+	}
+}
+
+void AWarriorCharacter::HandleHealthChanged(float Current, float Max)
+{
+	if (PlayerHUD)
+	{
+		PlayerHUD->UpdateHealth(Current, Max);
+	}
+}
+
+void AWarriorCharacter::HandleRageChanged(float Current, float Max)
+{
+	if (PlayerHUD)
+	{
+		PlayerHUD->UpdateRage(Current, Max);
+	}
 }
 
 void AWarriorCharacter::DoMove(float Right, float Forward)
@@ -163,4 +248,9 @@ void AWarriorCharacter::DoJumpEnd()
 {
 	// Signal the character to stop jumping
 	StopJumping();
+}
+
+void AWarriorCharacter::DoAttack()
+{
+	HandleBasicAttack();
 }

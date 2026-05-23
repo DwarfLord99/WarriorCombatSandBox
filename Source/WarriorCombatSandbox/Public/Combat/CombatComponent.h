@@ -7,6 +7,7 @@
 #include "AbilityData.h"
 #include "CombatComponent.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnRageChanged, float, NewRage, float, Delta);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class WARRIORCOMBATSANDBOX_API UCombatComponent : public UActorComponent
@@ -31,9 +32,6 @@ protected:
 	UAbilityData* CurrentAbilityData;
 
 	UFUNCTION(BlueprintCallable, Category = "Combat")
-	void TryUseAbility(UAbilityData* AbilityData);
-
-	UFUNCTION(BlueprintCallable, Category = "Combat")
 	void OnAttackMontageEnded(UAnimMontage* Montage, bool bInterrupted);
 
 	UFUNCTION(BlueprintCallable, Category = "Combat")
@@ -51,5 +49,9 @@ public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
-		
+	UPROPERTY(BlueprintAssignable, Category = "Combat")
+	FOnRageChanged OnRageChanged;
+
+	UFUNCTION(BlueprintCallable, Category = "Combat")
+	void TryUseAbility(UAbilityData* AbilityData);
 };

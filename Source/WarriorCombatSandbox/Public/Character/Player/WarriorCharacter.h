@@ -7,6 +7,8 @@
 #include "Logging/LogMacros.h"
 #include "Character/Components/HealthComponent.h"
 #include "Combat/CombatComponent.h"
+#include "Combat/AbilityData.h"
+#include "UI/PlayerHUD.h"
 #include "WarriorCharacter.generated.h"
 
 class USpringArmComponent;
@@ -61,7 +63,7 @@ protected:
 
 	// Basic Attack Input Action
 	UPROPERTY(EditAnywhere, Category = Input)
-	UInputAction* AttackAction;
+	UInputAction* BasicAttackAction;
 
 	// Heavy Attack Input Action
 	UPROPERTY(EditAnywhere, Category = Input)
@@ -79,6 +81,33 @@ protected:
 	UPROPERTY(EditAnywhere, Category = Input)
 	UInputAction* UltimateAction;
 
+	// Basic Attack Data
+	UPROPERTY(EditAnywhere, Category = Abilities)
+	UAbilityData* BasicAttackData;
+
+	// Heavy Attack Data
+	UPROPERTY(EditAnywhere, Category = Abilities)
+	UAbilityData* HeavyAttackData;
+
+	// Defense Skill Data
+	UPROPERTY(EditAnywhere, Category = Abilities)
+	UAbilityData* DefenseSkillData;
+
+	// Interrupt Data
+	UPROPERTY(EditAnywhere, Category = Abilities)
+	UAbilityData* InterruptData;
+
+	// Ultimate Data
+	UPROPERTY(EditAnywhere, Category = Abilities)
+	UAbilityData* UltimateData;
+
+	// Health Data
+	UPROPERTY(EditDefaultsOnly, Category = UI)
+	TSubclassOf<UPlayerHUD> HUDClass;
+
+	UPROPERTY()
+	UPlayerHUD* PlayerHUD;
+
 public:
 
 	// Sets default values for this character's properties
@@ -88,6 +117,9 @@ protected:
 
 	// Initialize input bindings
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+	// Called when the game starts or when spawned
+	virtual void BeginPlay() override;
 
 protected:
 
@@ -115,6 +147,14 @@ protected:
 	// Ultimate Skill
 	void HandleUltimate();
 
+	// Health Changed
+	UFUNCTION()
+	void HandleHealthChanged(float Current, float Max);
+
+	// Rage Changed
+	UFUNCTION()
+	void HandleRageChanged(float Current, float Max);
+
 public:	
 
 	// Handle Movement input
@@ -131,6 +171,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Input")
 	virtual void DoJumpEnd();
+
+	UFUNCTION(BlueprintCallable, Category = "Input")
+	virtual void DoAttack();
 
 public:
 

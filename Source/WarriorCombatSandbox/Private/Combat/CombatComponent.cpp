@@ -21,7 +21,8 @@ void UCombatComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	// ...
+	CurrentRage = 0.f;
+	OnRageChanged.Broadcast(CurrentRage, 0.f);
 	
 }
 
@@ -44,7 +45,17 @@ void UCombatComponent::TryUseAbility(UAbilityData* AbilityData)
 	CurrentRage -= AbilityData->RageCost;
 	CurrentRage += AbilityData->RageGenerated;
 
+	CurrentRage = FMath::Clamp(CurrentRage, 0.f, MaxRage);
+
+	OnRageChanged.Broadcast(CurrentRage, AbilityData->RageGenerated);
+
 	ACharacter* OwnerCharacter = Cast<ACharacter>(GetOwner());
+	if (OwnerCharacter && OwnerCharacter->GetCharacterMovement()->IsFalling())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Cannot use ability while in the air"));
+		return;
+	}
+
 	if (OwnerCharacter && AbilityData->AttackMontage && !bIsAttacking)
 	{
 		bIsAttacking = true;

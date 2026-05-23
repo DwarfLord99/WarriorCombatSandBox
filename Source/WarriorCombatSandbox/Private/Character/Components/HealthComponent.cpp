@@ -18,7 +18,8 @@ UHealthComponent::UHealthComponent()
 void UHealthComponent::BeginPlay()
 {
 	Super::BeginPlay();
-	CurrentHealth = MaxHealth;	
+	CurrentHealth = MaxHealth;
+	OnHealthChanged.Broadcast(CurrentHealth, 0.f);
 }
 
 void UHealthComponent::ApplyDamage(float DamageAmount)

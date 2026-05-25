@@ -44,18 +44,20 @@ protected:
 
 	bool bIsAttacking = false;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat")
-	AWeapon* EquippedWeapon;
-
 public:	
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
+	void SetEquippedWeapon(AWeapon* NewWeapon) { EquippedWeapon = NewWeapon; }
+
 	UPROPERTY(BlueprintAssignable, Category = "Combat")
 	FOnRageChanged OnRageChanged;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat")
+	AWeapon* EquippedWeapon;
+
 	UFUNCTION(BlueprintCallable, Category = "Combat")
-	void OnAttackHit();
+	void OnAttackHit(AActor* HitActor);
 
 	UFUNCTION(BlueprintCallable, Category = "Combat")
 	void TryUseAbility(UAbilityData* AbilityData);

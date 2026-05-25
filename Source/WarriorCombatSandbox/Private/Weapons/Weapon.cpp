@@ -10,8 +10,11 @@ AWeapon::AWeapon()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
+	Root = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
+	RootComponent = Root;
+
 	WeaponMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("WeaponMesh"));
-	SetRootComponent(WeaponMesh);
+	WeaponMesh->SetupAttachment(Root);
 
 	WeaponCollider = CreateDefaultSubobject<UBoxComponent>(TEXT("WeaponCollider"));
 	WeaponCollider->SetupAttachment(WeaponMesh);
@@ -73,6 +76,57 @@ AActor* AWeapon::PerformTrace()
 			return HitActor;
 		}
 	}
+
+	// Debug: draw the tip movement
+	DrawDebugLine(
+		GetWorld(),
+		PrevTip,
+		CurrentTip,
+		FColor::Red,
+		false,
+		0.05f,
+		0,
+		1.5f
+	);
+
+	// Debug: draw the base movement
+	DrawDebugLine(
+		GetWorld(),
+		PrevBase,
+		CurrentBase,
+		FColor::Blue,
+		false,
+		0.05f,
+		0,
+		1.5f
+	);
+
+	// Debug: draw the blade segment
+	DrawDebugLine(
+		GetWorld(),
+		CurrentBase,
+		CurrentTip,
+		FColor::Yellow,
+		false,
+		0.05f,
+		0,
+		1.5f
+	);
+
+	// Debug: draw hit point
+	if (bHit)
+	{
+		DrawDebugSphere(
+			GetWorld(),
+			Hit.ImpactPoint,
+			8.f,
+			12,
+			FColor::Green,
+			false,
+			0.1f
+		);
+	}
+
 
 	return nullptr;
 }

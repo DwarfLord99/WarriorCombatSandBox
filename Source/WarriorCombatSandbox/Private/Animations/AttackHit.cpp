@@ -18,5 +18,5 @@ void UAttackHit::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Ani
 	if (!CombatComponent)
 		return;
 
-	CombatComponent->OnAttackHit();
+	//CombatComponent->OnAttackHit();
 }

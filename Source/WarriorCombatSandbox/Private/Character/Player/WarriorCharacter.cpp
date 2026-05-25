@@ -142,6 +142,15 @@ void AWarriorCharacter::BeginPlay()
 		{
 			UE_LOG(LogWarriorCharacter, Error, TEXT("'%s' Failed to spawn equipped weapon!"), *GetNameSafe(this));
 		}
+
+		if (CombatComponent)
+		{
+			CombatComponent->SetEquippedWeapon(EquippedWeapon);
+		}
+		else
+		{
+			UE_LOG(LogWarriorCharacter, Error, TEXT("'%s' Failed to find Combat Component to set equipped weapon!"), *GetNameSafe(this));
+		}
 	}
 }
 

@@ -23,8 +23,7 @@ void UCombatComponent::BeginPlay()
 	Super::BeginPlay();
 
 	CurrentRage = 0.f;
-	OnRageChanged.Broadcast(CurrentRage, 0.f);
-	
+	OnRageChanged.Broadcast(CurrentRage, 0.f);	
 }
 
 void UCombatComponent::TryUseAbility(UAbilityData* AbilityData)
@@ -53,9 +52,6 @@ void UCombatComponent::TryUseAbility(UAbilityData* AbilityData)
 	if (OwnerCharacter && AbilityData->AttackMontage && !bIsAttacking)
 	{
 		bIsAttacking = true;
-
-		if (EquippedWeapon)
-			EquippedWeapon->StartTrace();
 
 		CurrentRage -= AbilityData->RageCost;
 		CurrentRage += AbilityData->RageGenerated;
@@ -87,21 +83,17 @@ void UCombatComponent::OnAttackMontageEnded(UAnimMontage* Montage, bool bInterru
 	{
 		OwnerCharacter->GetCharacterMovement()->SetMovementMode(MOVE_Walking);
 		bIsAttacking = false;
-
-		if (EquippedWeapon)
-			EquippedWeapon->EndTrace();
 	}
 }
 
-void UCombatComponent::OnAttackHit()
+void UCombatComponent::OnAttackHit(AActor* HitActor)
 {
-	AActor* HitTarget = GetHitTarget();
-	if (!HitTarget)
+	if (!HitActor)
 		return;
 
-	ApplyDamage(HitTarget, CurrentAbilityData ? CurrentAbilityData->DamageAmount : 10.f);
+	ApplyDamage(HitActor, CurrentAbilityData ? CurrentAbilityData->DamageAmount : 10.f);
 
-	UE_LOG(LogTemp, Log, TEXT("Hit target: %s"), *HitTarget->GetName());
+	UE_LOG(LogTemp, Log, TEXT("Hit target: %s"), *HitActor->GetName());
 }
 
 void UCombatComponent::ApplyDamage(AActor* Target, float DamageAmount)
@@ -145,7 +137,10 @@ AActor* UCombatComponent::GetHitTarget()
 	//return nullptr;
 
 	if (!EquippedWeapon)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("GetHitTarget called but no weapon equipped"));
 		return nullptr;
+	}
 
 	return EquippedWeapon->PerformTrace();
 }

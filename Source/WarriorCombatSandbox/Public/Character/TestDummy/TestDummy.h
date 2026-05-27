@@ -8,7 +8,10 @@
 #include "Combat/Damageable.h"
 #include "TestDummy.generated.h"
 
-UCLASS()
+class UCapsuleComponent;
+class USkeletalMeshComponent;
+
+UCLASS(abstract)
 class WARRIORCOMBATSANDBOX_API ATestDummy : public AActor, public IDamageable
 {
 	GENERATED_BODY()
@@ -22,11 +25,27 @@ protected:
 	virtual void BeginPlay() override;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	UCapsuleComponent* CapsuleComponent;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	USkeletalMeshComponent* MeshComponent;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	UHealthComponent* HealthComponent;
+
+	UPROPERTY(EditDefaultsOnly, Category = "AnimMontage")
+	UAnimMontage* DeathMontage;
+
 
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
 	virtual void RecieveDamage_Implementation(float DamageAmount) override;
+
+	UFUNCTION()
+	void HandleDeath();
+	
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	bool bIsDead = false;
 };

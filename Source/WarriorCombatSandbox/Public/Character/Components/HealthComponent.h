@@ -30,6 +30,9 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Health")
 	float CurrentHealth;
 
+	UPROPERTY()
+	bool bIsDead = false;
+
 public:	
 	
 	UPROPERTY(BlueprintAssignable, Category = "Health")
@@ -37,6 +40,9 @@ public:
 
 	UPROPERTY(BlueprintAssignable, Category = "Health")
 	FOnDeath OnDeath;
+
+	UPROPERTY(EditDefaultsOnly, Category = "AnimMontage")
+	UAnimMontage* HitReactMontage;
 
 	UFUNCTION(BlueprintCallable, Category = "Health")
 	void ApplyDamage(float DamageAmount);
@@ -49,5 +55,8 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Health")
 	float GetMaxHealth() const { return MaxHealth; }
+
+	UFUNCTION(BlueprintCallable, Category = "Health")
+	void HandleDeath();
 		
 };

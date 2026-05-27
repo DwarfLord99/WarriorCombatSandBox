@@ -31,11 +31,28 @@ void UHealthComponent::ApplyDamage(float DamageAmount)
 	CurrentHealth = FMath::Clamp(CurrentHealth - DamageAmount, 0.f, MaxHealth);
 	UE_LOG(LogTemp, Log, TEXT("Health changed: %f -> %f"), OldHealth, CurrentHealth);
 
+	if (!bIsDead)
+	{
+		// Get anim instance of owner actor and play hit react montage if it exists
+		if (HitReactMontage)
+		{
+			AActor* Owner = GetOwner();
+			if (Owner)
+			{
+				UAnimInstance* AnimInstance = Owner->FindComponentByClass<USkeletalMeshComponent>()->GetAnimInstance();
+				if (AnimInstance)
+				{
+					AnimInstance->Montage_Play(HitReactMontage);
+				}
+			}
+		}
+	}
+
 	OnHealthChanged.Broadcast(CurrentHealth, CurrentHealth - OldHealth);
 
 	if (CurrentHealth <= 0.f)
 	{
-		OnDeath.Broadcast();
+		HandleDeath();
 	}
 }
 
@@ -48,6 +65,16 @@ void UHealthComponent::Heal(float HealAmount)
 	CurrentHealth = FMath::Clamp(CurrentHealth + HealAmount, 0.f, MaxHealth);
 
 	OnHealthChanged.Broadcast(CurrentHealth, CurrentHealth - OldHealth);
+}
+
+void UHealthComponent::HandleDeath()
+{
+	if (bIsDead)
+		return;
+
+	bIsDead = true;
+
+	OnDeath.Broadcast();
 }
 
 

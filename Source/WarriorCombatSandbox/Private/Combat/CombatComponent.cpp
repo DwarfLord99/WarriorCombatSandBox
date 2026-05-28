@@ -54,11 +54,10 @@ void UCombatComponent::TryUseAbility(UAbilityData* AbilityData)
 		bIsAttacking = true;
 
 		CurrentRage -= AbilityData->RageCost;
-		CurrentRage += AbilityData->RageGenerated;
 
 		CurrentRage = FMath::Clamp(CurrentRage, 0.f, MaxRage);
 
-		OnRageChanged.Broadcast(CurrentRage, AbilityData->RageGenerated);
+		OnRageChanged.Broadcast(CurrentRage, CurrentAbilityData->RageGenerated);
 
 		UAnimInstance* AnimInstance = OwnerCharacter->GetMesh()->GetAnimInstance();
 
@@ -90,6 +89,11 @@ void UCombatComponent::OnAttackHit(AActor* HitActor)
 {
 	if (!HitActor)
 		return;
+	CurrentRage += CurrentAbilityData->RageGenerated;
+
+	CurrentRage = FMath::Clamp(CurrentRage, 0.f, MaxRage);
+
+	OnRageChanged.Broadcast(CurrentRage, CurrentAbilityData->RageGenerated);
 
 	ApplyDamage(HitActor, CurrentAbilityData ? CurrentAbilityData->DamageAmount : 10.f);
 
@@ -109,33 +113,6 @@ void UCombatComponent::ApplyDamage(AActor* Target, float DamageAmount)
 
 AActor* UCombatComponent::GetHitTarget()
 {
-	//ACharacter* OwnerCharacter = Cast<ACharacter>(GetOwner());
-	//if (!OwnerCharacter)
-	//	return nullptr;
-
-	//FVector Start = OwnerCharacter->GetActorLocation();
-	//FVector Forward = OwnerCharacter->GetActorForwardVector();
-	//FVector End = Start + Forward * 150.f; // attack range
-
-	//FHitResult Hit;
-	//FCollisionQueryParams Params;
-	//Params.AddIgnoredActor(OwnerCharacter);
-
-	//bool bHit = GetWorld()->LineTraceSingleByChannel(
-	//	Hit,
-	//	Start,
-	//	End,
-	//	ECC_Pawn,
-	//	Params
-	//);
-
-	//if (bHit)
-	//{
-	//	return Hit.GetActor();
-	//}
-
-	//return nullptr;
-
 	if (!EquippedWeapon)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("GetHitTarget called but no weapon equipped"));

@@ -10,6 +10,7 @@
 #include "GameFramework/Controller.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "Combat/AbilityInputSystem.h"
 #include "InputActionValue.h"
 #include "WarriorCombatSandbox/WarriorCombatSandbox.h"
 
@@ -75,11 +76,11 @@ void AWarriorCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 		EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Triggered, this, &AWarriorCharacter::Sprint);
 
 		// Combat
-		EnhancedInputComponent->BindAction(BasicAttackAction, ETriggerEvent::Triggered, this, &AWarriorCharacter::DoAttack);
-		EnhancedInputComponent->BindAction(HeavyAttackAction, ETriggerEvent::Triggered, this, &AWarriorCharacter::HandleHeavyAttack);
-		EnhancedInputComponent->BindAction(DefenseSkillAction, ETriggerEvent::Triggered, this, &AWarriorCharacter::HandleDefenseSkill);
-		EnhancedInputComponent->BindAction(InterruptAction, ETriggerEvent::Triggered, this, &AWarriorCharacter::HandleInterrupt);
-		EnhancedInputComponent->BindAction(UltimateAction, ETriggerEvent::Triggered, this, &AWarriorCharacter::HandleUltimate);
+		EnhancedInputComponent->BindAction(BasicAttackAction, ETriggerEvent::Triggered, this, &AWarriorCharacter::InputBasicAttack);
+		EnhancedInputComponent->BindAction(HeavyAttackAction, ETriggerEvent::Triggered, this, &AWarriorCharacter::InputHeavyAttack);
+		EnhancedInputComponent->BindAction(DefenseSkillAction, ETriggerEvent::Triggered, this, &AWarriorCharacter::InputDefenseSkill);
+		EnhancedInputComponent->BindAction(InterruptAction, ETriggerEvent::Triggered, this, &AWarriorCharacter::InputInterruptSkill);
+		EnhancedInputComponent->BindAction(UltimateAction, ETriggerEvent::Triggered, this, &AWarriorCharacter::InputUltimateAttack);
 	}
 	else
 	{
@@ -177,44 +178,29 @@ void AWarriorCharacter::Sprint(const FInputActionValue& Value)
 	// stub
 }
 
-void AWarriorCharacter::HandleBasicAttack()
+void AWarriorCharacter::InputBasicAttack()
 {
-	if (CombatComponent && BasicAttackData)
-	{
-		CombatComponent->TryUseAbility(BasicAttackData);
-	}
+	DoAttack(EAbilityInput::BasicAttack);
 }
 
-void AWarriorCharacter::HandleHeavyAttack()
+void AWarriorCharacter::InputHeavyAttack()
 {
-	if (CombatComponent && HeavyAttackData)
-	{
-		CombatComponent->TryUseAbility(HeavyAttackData);
-	}
+	DoAttack(EAbilityInput::HeavyAttack);
 }
 
-void AWarriorCharacter::HandleDefenseSkill()
+void AWarriorCharacter::InputDefenseSkill()
 {
-	if (CombatComponent && DefenseSkillData)
-	{
-		CombatComponent->TryUseAbility(DefenseSkillData);
-	}
+	DoAttack(EAbilityInput::DefenseSkill);
 }
 
-void AWarriorCharacter::HandleInterrupt()
+void AWarriorCharacter::InputInterruptSkill()
 {
-	if (CombatComponent && InterruptData)
-	{
-		CombatComponent->TryUseAbility(InterruptData);
-	}
+	DoAttack(EAbilityInput::InterruptSkill);
 }
 
-void AWarriorCharacter::HandleUltimate()
+void AWarriorCharacter::InputUltimateAttack()
 {
-	if (CombatComponent && UltimateData)
-	{
-		CombatComponent->TryUseAbility(UltimateData);
-	}
+	DoAttack(EAbilityInput::UltimateSkill);
 }
 
 void AWarriorCharacter::HandleHealthChanged(float Current, float Max)
@@ -273,7 +259,17 @@ void AWarriorCharacter::DoJumpEnd()
 	StopJumping();
 }
 
-void AWarriorCharacter::DoAttack()
+void AWarriorCharacter::DoAttack(EAbilityInput InputType)
 {
-	HandleBasicAttack();
+	if (!CombatComponent)
+		return;
+
+	if (!AbilityDataMap.Contains(InputType))
+		return;
+
+	UAbilityData* Ability = AbilityDataMap[InputType];
+	if (!Ability)
+		return;
+
+	CombatComponent->TryUseAbility(Ability);
 }

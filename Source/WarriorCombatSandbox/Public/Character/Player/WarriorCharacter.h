@@ -8,6 +8,7 @@
 #include "Character/Components/HealthComponent.h"
 #include "Combat/CombatComponent.h"
 #include "Combat/AbilityData.h"
+#include "Combat/AbilityInputSystem.h"
 #include "Weapons/Weapon.h"
 #include "UI/PlayerHUD.h"
 #include "WarriorCharacter.generated.h"
@@ -117,6 +118,9 @@ protected:
 	UPROPERTY()
 	UPlayerHUD* PlayerHUD;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Abilities")
+	TMap<EAbilityInput, UAbilityData*> AbilityDataMap;
+
 public:
 
 	// Sets default values for this character's properties
@@ -142,19 +146,19 @@ protected:
 	void Sprint(const FInputActionValue& Value);
 
 	// Basic Attack
-	void HandleBasicAttack();
+	void InputBasicAttack();
 
 	// Heavy Attack
-	void HandleHeavyAttack();
+	void InputHeavyAttack();
 
 	// Defense Skill
-	void HandleDefenseSkill();
+	void InputDefenseSkill();
 
 	// Interrupt Skill
-	void HandleInterrupt();
+	void InputInterruptSkill();
 
 	// Ultimate Skill
-	void HandleUltimate();
+	void InputUltimateAttack();
 
 	// Health Changed
 	UFUNCTION()
@@ -182,7 +186,7 @@ public:
 	virtual void DoJumpEnd();
 
 	UFUNCTION(BlueprintCallable, Category = "Input")
-	virtual void DoAttack();
+	virtual void DoAttack(EAbilityInput InputType);
 
 public:
 

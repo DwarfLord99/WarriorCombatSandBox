@@ -6,6 +6,7 @@
 #include "Components/ActorComponent.h"
 #include "AbilityData.h"
 #include "Combat/Damageable.h"
+#include "Combat/AbilityInputSystem.h"
 #include "Weapons/Weapon.h"
 #include "CombatComponent.generated.h"
 
@@ -56,15 +57,24 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat")
 	AWeapon* EquippedWeapon;
 
+	UPROPERTY()
+	TMap<EAbilityInput, float> LastUsedTime;
+
 	UFUNCTION(BlueprintCallable, Category = "Combat")
 	void OnAttackHit(AActor* HitActor);
 
 	UFUNCTION(BlueprintCallable, Category = "Combat")
-	void TryUseAbility(UAbilityData* AbilityData);
+	void TryUseAbility(EAbilityInput InputType, UAbilityData* AbilityData);
+
+	UFUNCTION(BlueprintCallable, Category = "Combat")
+	float GetCooldownRemaining(EAbilityInput InputType, const UAbilityData* AbilityData) const;
 
 	UFUNCTION(BlueprintCallable, Category = "Combat")
 	float GetCurrentRage() const { return CurrentRage; }
 
 	UFUNCTION(BlueprintCallable, Category = "Combat")
 	float GetMaxRage() const { return MaxRage; }
+
+	UFUNCTION(BlueprintCallable, Category = "Combat")
+	bool IsAbilityOnCooldown(EAbilityInput InputType, const UAbilityData* AbilityData) const;
 };

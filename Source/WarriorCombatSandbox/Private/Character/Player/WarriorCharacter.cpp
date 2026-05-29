@@ -271,5 +271,5 @@ void AWarriorCharacter::DoAttack(EAbilityInput InputType)
 	if (!Ability)
 		return;
 
-	CombatComponent->TryUseAbility(Ability);
+	CombatComponent->TryUseAbility(InputType, Ability);
 }

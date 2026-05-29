@@ -26,7 +26,7 @@ void UCombatComponent::BeginPlay()
 	OnRageChanged.Broadcast(CurrentRage, 0.f);	
 }
 
-void UCombatComponent::TryUseAbility(UAbilityData* AbilityData)
+void UCombatComponent::TryUseAbility(EAbilityInput InputType, UAbilityData* AbilityData)
 {
 	if (!AbilityData)
 	{
@@ -39,6 +39,12 @@ void UCombatComponent::TryUseAbility(UAbilityData* AbilityData)
 		UE_LOG(LogTemp, Warning, TEXT("Not enough rage to use ability"));
 		return;
 	}
+
+	if (IsAbilityOnCooldown(InputType, AbilityData))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Ability is on cooldown"), *AbilityData->GetName());
+		return;
+	}	
 
 	ACharacter* OwnerCharacter = Cast<ACharacter>(GetOwner());
 	if (OwnerCharacter && OwnerCharacter->GetCharacterMovement()->IsFalling())
@@ -72,7 +78,37 @@ void UCombatComponent::TryUseAbility(UAbilityData* AbilityData)
 		MontageEndedDelegate.BindUObject(this, &UCombatComponent::OnAttackMontageEnded);
 		AnimInstance->Montage_Play(AbilityData->AttackMontage);
 		AnimInstance->Montage_SetEndDelegate(MontageEndedDelegate, AbilityData->AttackMontage);
+
+		LastUsedTime.Add(InputType, GetWorld()->GetTimeSeconds());
 	}
+}
+
+float UCombatComponent::GetCooldownRemaining(EAbilityInput InputType, const UAbilityData* AbilityData) const
+{
+	if (!AbilityData)
+		return 0.f;
+
+	const float* LastTimePtr = LastUsedTime.Find(InputType);
+	if (!LastTimePtr)
+		return 0.f;
+
+	float TimeSinceUse = GetWorld()->GetTimeSeconds() - *LastTimePtr;
+	float CooldownRemaining = AbilityData->CooldownTime - TimeSinceUse;
+
+	return FMath::Max(CooldownRemaining, 0.f);
+}
+
+bool UCombatComponent::IsAbilityOnCooldown(EAbilityInput InputType, const UAbilityData* AbilityData) const
+{
+	if (!AbilityData)
+		return false;
+
+	const float* LastTimePtr = LastUsedTime.Find(InputType);
+	if (!LastTimePtr)
+		return false;
+
+	float TimeSinceUse = GetWorld()->GetTimeSeconds() - *LastTimePtr;
+	return TimeSinceUse < AbilityData->CooldownTime;
 }
 
 void UCombatComponent::OnAttackMontageEnded(UAnimMontage* Montage, bool bInterrupted)

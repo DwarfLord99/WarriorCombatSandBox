@@ -57,7 +57,7 @@ void UCombatComponent::TryUseAbility(UAbilityData* AbilityData)
 
 		CurrentRage = FMath::Clamp(CurrentRage, 0.f, MaxRage);
 
-		OnRageChanged.Broadcast(CurrentRage, CurrentAbilityData->RageGenerated);
+		OnRageChanged.Broadcast(CurrentRage, CurrentAbilityData->RageCost);
 
 		UAnimInstance* AnimInstance = OwnerCharacter->GetMesh()->GetAnimInstance();
 

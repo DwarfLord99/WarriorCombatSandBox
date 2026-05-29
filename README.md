@@ -1,166 +1,89 @@
-# Warrior Combat Sandbox — Player Combat System (WIP)
+# Warrior Combat Sandbox — Unreal Engine 5
 
-A third‑person action combat prototype built in Unreal Engine 5, focused on creating a clean, extensible, data‑driven melee combat system.
-This project is actively evolving, and this README documents the systems implemented so far and the technical challenges solved along the way.
+A modular third‑person combat prototype built in Unreal Engine 5.  
+This project focuses on clean gameplay architecture, data‑driven abilities, and scalable combat systems suitable for action RPGs and character‑action games.
 
-# 🎮 Project Overview
-This prototype establishes the foundation for a full player‑side combat system, including:
+---
 
-Third‑person character movement and animation
+## 🎮 Project Overview
 
-Data‑driven ability and resource system
+Warrior Combat Sandbox is a technical combat prototype featuring:
 
-Modular combat component
+- **Data‑driven Ability System** using `EAbilityInput` enum routing  
+- **AbilityMap** for scalable ability slot assignment  
+- **Modular CombatComponent** handling traces, hit detection, and damage  
+- **Rage System** with ability‑specific resource costs  
+- **Animation‑driven combat** using montages and notifies  
+- **Hit reaction pipeline** for enemies  
+- **Expandable architecture** designed for future UI, combos, and advanced abilities  
 
-Weapon‑based melee hit detection
+This project is the successor to an earlier prototype and now includes a significantly improved ability routing system and cleaner Character → Component communication.
 
-Damage, health, and death handling
+---
 
-Debugging and iteration workflow
+## 🧩 Core Systems
 
-Future updates will expand this into a complete combat loop with combos, hit reactions, VFX, and enemy AI.
+### **Ability Input System**
+- Enum‑based ability routing (`EAbilityInput`)
+- Character stores a `TMap<EAbilityInput, UAbilityData*>`
+- Input functions call `DoAttack(EAbilityInput)`
+- Scales to any number of abilities without rewriting code
 
-# 🧍 Character & Animation Setup
-Built using KayKit’s mannequin assets and UE5’s Enhanced Input system
+### **Combat Component**
+- Executes ability logic
+- Handles traces, hit detection, and damage application
+- Reads damage, rage cost, and montage data from `UAbilityData`
 
-Features:
+### **Ability Data**
+- Defines damage, rage cost, montage, trace settings, and more
+- Allows new abilities to be added without modifying C++
 
-Independent follow camera
+### **Animation System**
+- Uses montages with notifies to trigger hit traces
+- Supports different slots and animation sections per ability
 
-Player‑aligned rotation
+---
 
-Idle/Walk blendspace driven by velocity
+## 🛠️ Tech Stack
 
-Attack montage integration
+- **Unreal Engine 5**
+- **C++ Gameplay Framework**
+- **Animation Montages + Notifies**
+- **Data Assets (UAbilityData)**
+- **Enhanced Input System**
 
-Jumping is functional; jump animation will be added later
+---
 
-This provides a flexible base for future movement and combat features.
+## 📚 Documentation
 
-# ⚔️ Data‑Driven Ability System
-Implemented a modular Ability Data System using Unreal Data Assets.
+Full documentation is available in the project Wiki:
 
-Each ability defines:
+- Combat System  
+- Ability System  
+- Health System  
+- UI System  
+- Project Roadmap  
 
-Damage
+---
 
-Rage cost or generation
+## 🚀 Current Status
 
-Cooldown
+**Milestone 1: Core Combat Loop — Complete**  
+- Basic + Heavy attacks  
+- Rage system  
+- Hit detection + damage  
+- Animation notifies  
+- AbilityData integration  
 
-Animation montage
+**Milestone 2: Ability Input System — Complete**  
+- Enum‑based routing  
+- AbilityMap  
+- Scalable DoAttack()  
 
-Additional metadata for future mechanics
+Now progressing into **Milestone 3: Ability Expansion**.
 
-This allows rapid iteration and supports multiple future classes (warrior, rogue, mage, etc.) without modifying core code.
+---
 
-# 🧩 Combat Component Architecture
-The CombatComponent handles all player combat logic:
+## 📄 License
 
-Reads ability data and executes the selected attack
-
-Locks movement during attack animations
-
-Manages rage generation/spending
-
-Coordinates with animation notifies for hit detection
-
-Clean separation of gameplay logic from animation and weapon code
-
-This architecture is designed for scalability and reuse across multiple character types.
-
-# 💥 Damage, Health, and Interaction Systems
-To standardize how actors receive damage:
-
-IDamageable Interface
-Provides a universal entry point for applying damage
-
-Allows any actor (NPCs, destructibles, bosses) to participate in combat
-
-HealthComponent
-Tracks current/max health
-
-Applies damage and healing
-
-Broadcasts health changes
-
-Fires a death event when HP reaches zero
-
-Blueprint actors simply forward the interface call to their HealthComponent.
-
-@ 🗡️ Weapon‑Based Hit Detection
-The melee hit detection system evolved through several iterations:
-
-Initial Prototype
-Forward‑vector trace triggered by a custom C++ AnimNotify
-
-Worked before a weapon mesh was added
-
-Challenges Encountered
-Forward trace no longer matched weapon swing
-
-Weapon skeletal mesh had no skin weights, causing socket transforms to behave incorrectly
-
-Sweep traces visually intersected targets but didn’t register hits due to collision channel mismatches
-
-Multiple hits were registered per swing
-
-Final Implementation
-Switched to a Static Mesh weapon with proper sockets
-
-Created a C++ AnimNotifyState spanning the entire attack animation
-
-Performed continuous sweep traces using weapon base/tip sockets
-
-Added a per‑swing hit registry (TSet) to ensure only one damage application per target
-
-This results in accurate, animation‑aligned melee hit detection and fair gameplay behavior.
-
-# 🔧 Debugging & Problem‑Solving Highlights
-Several complex issues were identified and resolved during development:
-
-Socket transforms not updating  
-→ Caused by unskinned skeletal mesh; fixed by switching to static mesh.
-
-Trace visually intersecting but not hitting  
-→ Capsule collision wasn’t blocking the Visibility channel.
-
-CombatComponent not applying damage  
-→ Missing wiring between NotifyState → CombatComponent → WeaponActor.
-
-Multiple hits per swing  
-→ Solved with a per‑swing hit registry.
-
-These solutions demonstrate strong understanding of Unreal’s animation pipeline, collision system, and component‑based architecture.
-
-# 📌 Current Status
-The following systems are fully functional:
-
-Player attack execution
-
-Data‑driven ability logic
-
-Weapon‑based sweep tracing
-
-Single‑hit filtering
-
-Damage application
-
-Health reduction and death events
-
-This forms the core of a scalable melee combat system.
-
-# 🚀 Planned Features
-Upcoming additions include:
-
-Hit reactions and stagger animations
-
-Weapon trails and VFX
-
-Camera shake and hitstop
-
-Enemy AI integration
-
-Additional player classes and abilities
-
-UI elements (health bars, damage numbers)
+This project is for educational and portfolio purposes currently.

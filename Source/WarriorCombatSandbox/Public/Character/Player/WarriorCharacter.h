@@ -111,12 +111,8 @@ protected:
 	UPROPERTY()
 	AWeapon* EquippedWeapon;
 
-	// Health Data
-	UPROPERTY(EditDefaultsOnly, Category = UI)
-	TSubclassOf<UPlayerHUD> HUDClass;
-
 	UPROPERTY()
-	UPlayerHUD* PlayerHUD;
+	APlayerHUD* PlayerHUD;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Abilities")
 	TMap<EAbilityInput, UAbilityData*> AbilityDataMap;

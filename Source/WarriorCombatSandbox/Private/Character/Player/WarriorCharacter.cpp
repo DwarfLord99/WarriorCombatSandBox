@@ -92,18 +92,22 @@ void AWarriorCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if (HUDClass)
+	APlayerController* PlayerController = Cast<APlayerController>(GetController());
+	if (PlayerController)
 	{
-		PlayerHUD = CreateWidget<UPlayerHUD>(GetWorld(), HUDClass);
-
-		if (PlayerHUD)
+		PlayerHUD = Cast<APlayerHUD>(PlayerController->GetHUD());
+		if (!PlayerHUD)
 		{
-			PlayerHUD->AddToViewport();
+			UE_LOG(LogWarriorCharacter, Error, TEXT("'%s' Failed to find Player HUD!"), *GetNameSafe(this));
 		}
 		else
 		{
-			UE_LOG(LogWarriorCharacter, Error, TEXT("'%s' Failed to create Player HUD!"), *GetNameSafe(this));
+			UE_LOG(LogWarriorCharacter, Log, TEXT("'%s' Successfully found Player HUD!"), *GetNameSafe(this));
 		}
+	}
+	else
+	{
+		UE_LOG(LogWarriorCharacter, Error, TEXT("'%s' Failed to find Player Controller!"), *GetNameSafe(this));
 	}
 
 	if (HealthComponent)

@@ -6,10 +6,12 @@
 #include "GameFramework/Actor.h"
 #include "Character/Components/HealthComponent.h"
 #include "Combat/Damageable.h"
+#include "UI/EnemyHealthBar.h"
 #include "TestDummy.generated.h"
 
 class UCapsuleComponent;
 class USkeletalMeshComponent;
+class UWidgetComponent;
 
 UCLASS(abstract)
 class WARRIORCOMBATSANDBOX_API ATestDummy : public AActor, public IDamageable
@@ -33,8 +35,20 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	UHealthComponent* HealthComponent;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	UWidgetComponent* HealthBarWidget;
+
+	UPROPERTY()
+	APlayerCameraManager* CachedCameraManager;
+
+	UPROPERTY()
+	UEnemyHealthBar* CachedHealthBar;
+
 	UPROPERTY(EditDefaultsOnly, Category = "AnimMontage")
 	UAnimMontage* DeathMontage;
+
+	UPROPERTY()
+	FTimerHandle HideHealthBarTimer;
 
 
 public:	
@@ -45,6 +59,12 @@ public:
 
 	UFUNCTION()
 	void HandleDeath();
+
+	UFUNCTION()
+	void HandleHealthChanged(float Current, float Max);
+
+	UFUNCTION()
+	void HideHealthBar();
 	
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
 	bool bIsDead = false;

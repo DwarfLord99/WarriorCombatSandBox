@@ -4,6 +4,7 @@
 #include "Character/TestDummy/TestDummy.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/SkeletalMeshComponent.h"
+#include "Components/WidgetComponent.h"
 
 // Sets default values
 ATestDummy::ATestDummy()
@@ -18,6 +19,9 @@ ATestDummy::ATestDummy()
 	MeshComponent->SetupAttachment(RootComponent);
 	
 	HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComponent"));
+
+	HealthBarWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("HealthBarWidget"));
+	HealthBarWidget->SetupAttachment(RootComponent);
 }
 
 // Called when the game starts or when spawned
@@ -25,10 +29,26 @@ void ATestDummy::BeginPlay()
 {
 	Super::BeginPlay();
 
+	CachedCameraManager = GetWorld()->GetFirstPlayerController()->PlayerCameraManager;
+
+	if (HealthBarWidget)
+	{
+		UEnemyHealthBar* HealthBar = Cast<UEnemyHealthBar>(HealthBarWidget->GetUserWidgetObject());
+		CachedHealthBar = HealthBar;
+	}
+
 	if (HealthComponent)
 	{
+		HealthComponent->OnHealthChanged.AddDynamic(this, &ATestDummy::HandleHealthChanged);
 		HealthComponent->OnDeath.AddDynamic(this, &ATestDummy::HandleDeath);
 	}
+
+	if (CachedHealthBar && HealthComponent)
+	{
+		CachedHealthBar->UpdateHealthBar(HealthComponent->GetCurrentHealth(), HealthComponent->GetMaxHealth());
+	}
+
+	CachedHealthBar->SetVisibility(ESlateVisibility::Hidden);
 	
 }
 
@@ -37,6 +57,11 @@ void ATestDummy::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	if (!HealthBarWidget) return;
+
+	if (!CachedCameraManager) return;
+
+	HealthBarWidget->SetWorldRotation((CachedCameraManager->GetCameraLocation() - HealthBarWidget->GetComponentLocation()).Rotation());
 }
 
 void ATestDummy::RecieveDamage_Implementation(float DamageAmount)
@@ -46,6 +71,22 @@ void ATestDummy::RecieveDamage_Implementation(float DamageAmount)
 		HealthComponent->ApplyDamage(DamageAmount);
 		UE_LOG(LogTemp, Warning, TEXT("TestDummy received %f damage, current health: %f"), DamageAmount, HealthComponent->GetCurrentHealth());
 	}
+}
+
+void ATestDummy::HandleHealthChanged(float Current, float Max)
+{
+	if (CachedHealthBar)
+	{
+		CachedHealthBar->SetVisibility(ESlateVisibility::Visible);
+		CachedHealthBar->UpdateHealthBar(Current, HealthComponent->GetMaxHealth());
+
+		GetWorldTimerManager().SetTimer(HideHealthBarTimer, this, &ATestDummy::HideHealthBar, 3.5f, false);
+	}
+}
+
+void ATestDummy::HideHealthBar()
+{
+	CachedHealthBar->SetVisibility(ESlateVisibility::Hidden);
 }
 
 void ATestDummy::HandleDeath()

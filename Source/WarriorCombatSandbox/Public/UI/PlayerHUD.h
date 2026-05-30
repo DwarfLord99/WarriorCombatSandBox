@@ -3,30 +3,46 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Blueprint/UserWidget.h"
+#include "GameFramework/HUD.h"
 #include "PlayerHUD.generated.h"
 
-class UProgressBar;
+class UPlayerHUDWidget;
+class UHealthBarWidget;
+class URageBarWidget;
 
 /**
  * 
  */
 UCLASS()
-class WARRIORCOMBATSANDBOX_API UPlayerHUD : public UUserWidget
+class WARRIORCOMBATSANDBOX_API APlayerHUD : public AHUD
 {
 	GENERATED_BODY()
 	
 public:
 
-	UPROPERTY(meta = (BindWidget))
-	UProgressBar* RageBar;
+	virtual void BeginPlay() override;
 
-	UPROPERTY(meta = (BindWidget))
-	UProgressBar* HealthBar;
-
-	UFUNCTION(BlueprintCallable, Category = "PlayerHUD")
 	void UpdateHealth(float Current, float Max);
-
-	UFUNCTION(BlueprintCallable, Category = "PlayerHUD")
 	void UpdateRage(float Current, float Max);
+
+protected:
+
+	UPROPERTY(EditDefaultsOnly, Category = "UI")
+	TSubclassOf<UPlayerHUDWidget> PlayerHUDWidgetClass;
+
+	UPROPERTY(EditDefaultsOnly, Category = "UI")
+	TSubclassOf<UHealthBarWidget> HealthBarClass;
+
+	UPROPERTY(EditDefaultsOnly, Category = "UI")
+	TSubclassOf<URageBarWidget> RageBarClass;
+
+	UPROPERTY()
+	UPlayerHUDWidget* PlayerHUDWidget;
+
+	UPROPERTY()
+	UHealthBarWidget* HealthBar;
+
+	UPROPERTY()
+	URageBarWidget* RageBar;
+	
 };

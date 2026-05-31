@@ -9,6 +9,7 @@
 class UPlayerHUDWidget;
 class UHealthBarWidget;
 class URageBarWidget;
+class UAbilityBarWidget;
 
 /**
  * 
@@ -36,6 +37,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "UI")
 	TSubclassOf<URageBarWidget> RageBarClass;
 
+	UPROPERTY(EditDefaultsOnly, Category = "UI")
+	TSubclassOf<UAbilityBarWidget> AbilityBarClass;
+
 	UPROPERTY()
 	UPlayerHUDWidget* PlayerHUDWidget;
 
@@ -44,5 +48,8 @@ protected:
 
 	UPROPERTY()
 	URageBarWidget* RageBar;
+
+	UPROPERTY()
+	UAbilityBarWidget* AbilityBar;
 	
 };

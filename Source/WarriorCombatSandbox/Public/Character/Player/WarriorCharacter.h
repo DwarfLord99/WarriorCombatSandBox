@@ -9,6 +9,7 @@
 #include "Combat/CombatComponent.h"
 #include "Combat/AbilityData.h"
 #include "Combat/AbilityInputSystem.h"
+#include "Combat/AbilitySystemComponent.h"
 #include "Weapons/Weapon.h"
 #include "UI/PlayerHUD.h"
 #include "WarriorCharacter.generated.h"
@@ -40,6 +41,10 @@ class WARRIORCOMBATSANDBOX_API AWarriorCharacter : public ACharacter
 	// Health Component
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Health, meta = (AllowPrivateAccess = "true"))
 	UHealthComponent* HealthComponent;
+
+	// Ability System Component
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Abilities, meta = (AllowPrivateAccess = "true"))
+	UAbilitySystemComponent* AbilitySystem;
 
 protected:
 
@@ -73,35 +78,15 @@ protected:
 
 	// Defense Skill Input Action
 	UPROPERTY(EditAnywhere, Category = Input)
-	UInputAction* DefenseSkillAction;
+	UInputAction* AbilitySlot1Action;
 
 	// Interrupt Input Action
 	UPROPERTY(EditAnywhere, Category = Input)
-	UInputAction* InterruptAction;
+	UInputAction* AbilitySlot2Action;
 
 	// Ultimate Input Action
 	UPROPERTY(EditAnywhere, Category = Input)
-	UInputAction* UltimateAction;
-
-	// Basic Attack Data
-	UPROPERTY(EditAnywhere, Category = Abilities)
-	UAbilityData* BasicAttackData;
-
-	// Heavy Attack Data
-	UPROPERTY(EditAnywhere, Category = Abilities)
-	UAbilityData* HeavyAttackData;
-
-	// Defense Skill Data
-	UPROPERTY(EditAnywhere, Category = Abilities)
-	UAbilityData* DefenseSkillData;
-
-	// Interrupt Data
-	UPROPERTY(EditAnywhere, Category = Abilities)
-	UAbilityData* InterruptData;
-
-	// Ultimate Data
-	UPROPERTY(EditAnywhere, Category = Abilities)
-	UAbilityData* UltimateData;
+	UInputAction* AbilitySlot3Action;
 
 	// Weapon
 	UPROPERTY(EditAnywhere, Category = Equipment)
@@ -113,9 +98,6 @@ protected:
 
 	UPROPERTY()
 	APlayerHUD* PlayerHUD;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Abilities")
-	TMap<EAbilityInput, UAbilityData*> AbilityDataMap;
 
 public:
 
@@ -148,13 +130,13 @@ protected:
 	void InputHeavyAttack();
 
 	// Defense Skill
-	void InputDefenseSkill();
+	void InputSlot1();
 
 	// Interrupt Skill
-	void InputInterruptSkill();
+	void InputSlot2();
 
 	// Ultimate Skill
-	void InputUltimateAttack();
+	void InputSlot3();
 
 	// Health Changed
 	UFUNCTION()

@@ -4,6 +4,7 @@
 #include "UI/PlayerHUDWidget.h"
 #include "UI/HealthBarWidget.h"
 #include "UI/RageBarWidget.h"
+#include "UI/AbilityBarWidget.h"
 #include "Components/PanelWidget.h"
 
 void APlayerHUD::BeginPlay()
@@ -38,17 +39,18 @@ void APlayerHUD::BeginPlay()
 		}
 	}
 
-	if (PlayerHUDWidgetClass)
+	if (AbilityBarClass && PlayerHUDWidget && PlayerHUDWidget->AbilityBarAnchor)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("PlayerHUDWidgetClass IS VALID"));
-	}
-	else
-	{
-		UE_LOG(LogTemp, Error, TEXT("PlayerHUDWidgetClass IS NULL"));
-	}
+		AbilityBar = CreateWidget<UAbilityBarWidget>(GetWorld(), AbilityBarClass);
 
+		UPanelWidget* Anchor = Cast<UPanelWidget>(PlayerHUDWidget->AbilityBarAnchor);
+		if (Anchor)
+		{
+			Anchor->AddChild(AbilityBar);
+		}
 
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, TEXT("HUD SPAWNED"));
+		AbilityBar->InitializeSlots(3);
+	}
 
 }
 

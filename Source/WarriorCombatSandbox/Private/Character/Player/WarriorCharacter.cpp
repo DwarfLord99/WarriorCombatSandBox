@@ -53,6 +53,9 @@ AWarriorCharacter::AWarriorCharacter()
 	// Attach combat and health components
 	CombatComponent = CreateDefaultSubobject<UCombatComponent>(TEXT("CombatComponent"));
 	HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComponent"));
+
+	// Create ability system component
+	AbilitySystem = CreateDefaultSubobject<UAbilitySystemComponent>(TEXT("AbilitySystem"));
 }
 
 
@@ -78,9 +81,9 @@ void AWarriorCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 		// Combat
 		EnhancedInputComponent->BindAction(BasicAttackAction, ETriggerEvent::Triggered, this, &AWarriorCharacter::InputBasicAttack);
 		EnhancedInputComponent->BindAction(HeavyAttackAction, ETriggerEvent::Triggered, this, &AWarriorCharacter::InputHeavyAttack);
-		EnhancedInputComponent->BindAction(DefenseSkillAction, ETriggerEvent::Triggered, this, &AWarriorCharacter::InputDefenseSkill);
-		EnhancedInputComponent->BindAction(InterruptAction, ETriggerEvent::Triggered, this, &AWarriorCharacter::InputInterruptSkill);
-		EnhancedInputComponent->BindAction(UltimateAction, ETriggerEvent::Triggered, this, &AWarriorCharacter::InputUltimateAttack);
+		EnhancedInputComponent->BindAction(AbilitySlot1Action, ETriggerEvent::Triggered, this, &AWarriorCharacter::InputSlot1);
+		EnhancedInputComponent->BindAction(AbilitySlot2Action, ETriggerEvent::Triggered, this, &AWarriorCharacter::InputSlot2);
+		EnhancedInputComponent->BindAction(AbilitySlot3Action, ETriggerEvent::Triggered, this, &AWarriorCharacter::InputSlot3);
 	}
 	else
 	{
@@ -192,19 +195,19 @@ void AWarriorCharacter::InputHeavyAttack()
 	DoAttack(EAbilityInput::HeavyAttack);
 }
 
-void AWarriorCharacter::InputDefenseSkill()
+void AWarriorCharacter::InputSlot1()
 {
-	DoAttack(EAbilityInput::DefenseSkill);
+	DoAttack(EAbilityInput::Slot1);
 }
 
-void AWarriorCharacter::InputInterruptSkill()
+void AWarriorCharacter::InputSlot2()
 {
-	DoAttack(EAbilityInput::InterruptSkill);
+	DoAttack(EAbilityInput::Slot2);
 }
 
-void AWarriorCharacter::InputUltimateAttack()
+void AWarriorCharacter::InputSlot3()
 {
-	DoAttack(EAbilityInput::UltimateSkill);
+	DoAttack(EAbilityInput::Slot3);
 }
 
 void AWarriorCharacter::HandleHealthChanged(float Current, float Max)
@@ -265,15 +268,11 @@ void AWarriorCharacter::DoJumpEnd()
 
 void AWarriorCharacter::DoAttack(EAbilityInput InputType)
 {
-	if (!CombatComponent)
+	if (!AbilitySystem)
+	{
+		UE_LOG(LogWarriorCharacter, Error, TEXT("'%s' Failed to find Ability System Component!"), *GetNameSafe(this));
 		return;
+	}
 
-	if (!AbilityDataMap.Contains(InputType))
-		return;
-
-	UAbilityData* Ability = AbilityDataMap[InputType];
-	if (!Ability)
-		return;
-
-	CombatComponent->TryUseAbility(InputType, Ability);
+	AbilitySystem->HandleInput(InputType);
 }

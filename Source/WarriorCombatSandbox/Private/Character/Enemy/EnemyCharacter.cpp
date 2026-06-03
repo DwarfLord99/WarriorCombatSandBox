@@ -159,5 +159,11 @@ void AEnemyCharacter::HandleDeath()
 
 	// Despawn after delay
 	SetLifeSpan(4.f);
+
+	// Destroy weapon after delay
+	if (EquippedWeapon)
+	{
+		EquippedWeapon->SetLifeSpan(4.f);
+	}
 }
 

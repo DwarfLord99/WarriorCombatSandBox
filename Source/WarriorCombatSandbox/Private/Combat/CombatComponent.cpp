@@ -34,52 +34,81 @@ void UCombatComponent::TryUseAbility(EAbilityInput InputType, UAbilityData* Abil
 		return;
 	}
 
-	if (CurrentRage < AbilityData->RageCost)
+	// Cooldown check
+	if (IsAbilityOnCooldown(InputType, AbilityData))
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Not enough rage to use ability"));
+		UE_LOG(LogTemp, Warning, TEXT("Ability is on cooldown"));
 		return;
 	}
 
-	if (IsAbilityOnCooldown(InputType, AbilityData))
+	// Resource and state checks
+	if (!CanUseAbility(AbilityData))
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Ability is on cooldown"), *AbilityData->GetName());
+		UE_LOG(LogTemp, Warning, TEXT("Cannot use ability: %s"), *AbilityData->GetName());
 		return;
-	}	
+	}
+
+	// Then call the shared version
+	ExecuteAbility(AbilityData);
+
+	// If successful, record cooldown
+	LastUsedTime.Add(InputType, GetWorld()->GetTimeSeconds());
+}
+
+void UCombatComponent::TryUseAbility_AI(UAbilityData* AbilityData)
+{
+	if (!AbilityData)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("TryUseAbility called with null AbilityData"));
+		return;
+	}
+
+	if (!CanUseAbility(AbilityData))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Cannot use ability: %s"), *AbilityData->GetName());
+		return;
+	}
+
+	ExecuteAbility(AbilityData);
+}
+
+bool UCombatComponent::CanUseAbility(UAbilityData* AbilityData)
+{
+	if (CurrentRage < AbilityData->RageCost)
+		return false;
 
 	ACharacter* OwnerCharacter = Cast<ACharacter>(GetOwner());
 	if (OwnerCharacter && OwnerCharacter->GetCharacterMovement()->IsFalling())
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Cannot use ability while in the air"));
+		return false;
+
+	return true;
+}
+
+void UCombatComponent::ExecuteAbility(UAbilityData* AbilityData)
+{
+	ACharacter* OwnerCharacter = Cast<ACharacter>(GetOwner());
+	if (!OwnerCharacter || !AbilityData->AttackMontage || bIsAttacking)
 		return;
-	}
 
-	CurrentAbilityData = AbilityData;	
+	bIsAttacking = true;
+	CurrentAbilityData = AbilityData;
 
-	if (OwnerCharacter && AbilityData->AttackMontage && !bIsAttacking)
+	// Rage cost
+	CurrentRage -= AbilityData->RageCost;
+	CurrentRage = FMath::Clamp(CurrentRage, 0.f, MaxRage);
+	OnRageChanged.Broadcast(CurrentRage, AbilityData->RageCost);
+
+	// Play montage
+	UAnimInstance* AnimInstance = OwnerCharacter->GetMesh()->GetAnimInstance();
+	if (AnimInstance)
 	{
-		bIsAttacking = true;
+		OwnerCharacter->GetCharacterMovement()->DisableMovement();
 
-		CurrentRage -= AbilityData->RageCost;
-
-		CurrentRage = FMath::Clamp(CurrentRage, 0.f, MaxRage);
-
-		OnRageChanged.Broadcast(CurrentRage, CurrentAbilityData->RageCost);
-
-		UAnimInstance* AnimInstance = OwnerCharacter->GetMesh()->GetAnimInstance();
-
-		if (AnimInstance)
-		{
-			// Stop player movement while attacking
-			OwnerCharacter->GetCharacterMovement()->DisableMovement();
-		}
-
-		// Bind to montage end event
 		FOnMontageEnded MontageEndedDelegate;
 		MontageEndedDelegate.BindUObject(this, &UCombatComponent::OnAttackMontageEnded);
+
 		AnimInstance->Montage_Play(AbilityData->AttackMontage);
 		AnimInstance->Montage_SetEndDelegate(MontageEndedDelegate, AbilityData->AttackMontage);
-
-		LastUsedTime.Add(InputType, GetWorld()->GetTimeSeconds());
 	}
 }
 

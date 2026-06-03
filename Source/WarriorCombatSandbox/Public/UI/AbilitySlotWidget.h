@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
 #include "AbilitySlotData.h"
+#include "Combat/AbilitySystemComponent.h"
 #include "AbilitySlotWidget.generated.h"
 
 /**
@@ -16,6 +17,10 @@ class WARRIORCOMBATSANDBOX_API UAbilitySlotWidget : public UUserWidget
 	GENERATED_BODY()
 	
 public:
+
+	void InitializeSlot(int32 inIndex, class UAbilitySystemComponent* InASC);
+
+	void UpdateSlot();
 
 	UFUNCTION(BlueprintCallable)
 	void SetSlotData(const FAbilitySlotData& Data);
@@ -33,4 +38,9 @@ protected:
 
 	UPROPERTY(meta = (BindWidget))
 	class UProgressBar* CooldownBar;
+
+	int32 SlotIndex;
+
+	UPROPERTY()
+	class UAbilitySystemComponent* AbilitySystem;
 };

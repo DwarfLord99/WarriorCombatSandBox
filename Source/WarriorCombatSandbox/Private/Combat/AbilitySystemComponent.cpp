@@ -20,6 +20,8 @@ void UAbilitySystemComponent::TryUseAbility(int32 SlotIndex)
 {
 	if (!CanUseAbility(SlotIndex)) return;
 
+	UE_LOG(LogTemp, Warning, TEXT("TryUseAbility(%d) called"), SlotIndex);
+
 	ActiveAbility(SlotIndex);
 }
 
@@ -31,11 +33,13 @@ FAbilitySlotData UAbilitySystemComponent::GetSlotData(int32 SlotIndex) const
 
 	const UAbilityData* Ability = SlottedAbilities[SlotIndex];
 
-	//SlotData.Icon = Ability ? Ability->IconImage : nullptr;
+	SlotData.Icon = Ability ? Ability->IconImage : nullptr;
 	SlotData.Cooldown = Ability ? Ability->CooldownTime : 0.f;
 	SlotData.CurrentCooldown = CurrentCooldowns.IsValidIndex(SlotIndex) ? CurrentCooldowns[SlotIndex] : 0.f;
 	SlotData.Keybind = FText::FromString(FString::Printf(TEXT("%d"), SlotIndex + 1));
 	SlotData.bIsUsable = CanUseAbility(SlotIndex);
+
+	//UE_LOG(LogTemp, Warning, TEXT("GetSlotData called for slot %d"), SlotIndex);
 
 	return SlotData;
 }
@@ -53,7 +57,14 @@ void UAbilitySystemComponent::BeginPlay()
 	{
 		CD = 0.f;
 	}
-	
+
+	// Print out the slotted abilities and their corresponding input mappings for debugging
+	for (int32 i = 0; i < SlottedAbilities.Num(); i++)
+	{
+		FString AbilityName = SlottedAbilities[i] ? SlottedAbilities[i]->GetName() : TEXT("None");
+		FString InputName = SlotInputMapping.IsValidIndex(i) ? UEnum::GetValueAsString(SlotInputMapping[i]) : TEXT("None");
+		UE_LOG(LogTemp, Warning, TEXT("Slot %d: Ability = %s, Input = %s"), i, *AbilityName, *InputName);
+	}
 }
 
 
@@ -68,7 +79,7 @@ void UAbilitySystemComponent::HandleInput(EAbilityInput Input)
 	}
 
 	int32 SlotIndex = SlotInputMapping.IndexOfByKey(Input);
-	if (SlotIndex != INDEX_NONE)
+	if (SlotIndex != INDEX_NONE && !CombatComponent->bIsAttacking)
 	{
 		TryUseAbility(SlotIndex);
 		return;

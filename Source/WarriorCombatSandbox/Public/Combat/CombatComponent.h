@@ -43,8 +43,6 @@ protected:
 	UFUNCTION(BlueprintCallable, Category = "Combat")
 	AActor* GetHitTarget();
 
-	bool bIsAttacking = false;
-
 public:	
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
@@ -67,6 +65,15 @@ public:
 	void TryUseAbility(EAbilityInput InputType, UAbilityData* AbilityData);
 
 	UFUNCTION(BlueprintCallable, Category = "Combat")
+	void TryUseAbility_AI(UAbilityData* AbilityData);
+
+	UFUNCTION(BlueprintCallable, Category = "Combat")
+	bool CanUseAbility(UAbilityData* AbilityData);
+
+	UFUNCTION(BlueprintCallable, Category = "Combat")
+	void ExecuteAbility(UAbilityData* AbilityData);
+
+	UFUNCTION(BlueprintCallable, Category = "Combat")
 	float GetCooldownRemaining(EAbilityInput InputType, const UAbilityData* AbilityData) const;
 
 	UFUNCTION(BlueprintCallable, Category = "Combat")
@@ -77,4 +84,6 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Combat")
 	bool IsAbilityOnCooldown(EAbilityInput InputType, const UAbilityData* AbilityData) const;
+
+	bool bIsAttacking = false;
 };

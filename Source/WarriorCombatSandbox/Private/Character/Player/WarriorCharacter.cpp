@@ -62,6 +62,13 @@ AWarriorCharacter::AWarriorCharacter()
 // Called to bind functionality to input
 void AWarriorCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
+	UE_LOG(LogTemp, Warning, TEXT("BasicAttackAction: %s"), *GetNameSafe(BasicAttackAction));
+	UE_LOG(LogTemp, Warning, TEXT("HeavyAttackAction: %s"), *GetNameSafe(HeavyAttackAction));
+	UE_LOG(LogTemp, Warning, TEXT("AbilitySlot1Action: %s"), *GetNameSafe(AbilitySlot1Action));
+	UE_LOG(LogTemp, Warning, TEXT("AbilitySlot2Action: %s"), *GetNameSafe(AbilitySlot2Action));
+	UE_LOG(LogTemp, Warning, TEXT("AbilitySlot3Action: %s"), *GetNameSafe(AbilitySlot3Action));
+
+
 	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent))
 	{
 		// Jumping
@@ -89,6 +96,14 @@ void AWarriorCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 	{
 		UE_LOG(LogWarriorCharacter, Error, TEXT("'%s' Failed to find an Enhanced Input component!"), *GetNameSafe(this));
 	}
+
+	UE_LOG(LogTemp, Warning, TEXT("BasicAttackAction: %s"), *GetNameSafe(BasicAttackAction));
+	UE_LOG(LogTemp, Warning, TEXT("HeavyAttackAction: %s"), *GetNameSafe(HeavyAttackAction));
+	UE_LOG(LogTemp, Warning, TEXT("AbilitySlot1Action: %s"), *GetNameSafe(AbilitySlot1Action));
+	UE_LOG(LogTemp, Warning, TEXT("AbilitySlot2Action: %s"), *GetNameSafe(AbilitySlot2Action));
+	UE_LOG(LogTemp, Warning, TEXT("AbilitySlot3Action: %s"), *GetNameSafe(AbilitySlot3Action));
+
+
 }
 
 void AWarriorCharacter::BeginPlay()
@@ -160,6 +175,7 @@ void AWarriorCharacter::BeginPlay()
 			UE_LOG(LogWarriorCharacter, Error, TEXT("'%s' Failed to find Combat Component to set equipped weapon!"), *GetNameSafe(this));
 		}
 	}
+
 }
 
 void AWarriorCharacter::Move(const FInputActionValue& Value)
@@ -273,6 +289,8 @@ void AWarriorCharacter::DoAttack(EAbilityInput InputType)
 		UE_LOG(LogWarriorCharacter, Error, TEXT("'%s' Failed to find Ability System Component!"), *GetNameSafe(this));
 		return;
 	}
+
+	UE_LOG(LogTemp, Warning, TEXT("Input Attack with type: %d"), static_cast<uint8>(InputType));
 
 	AbilitySystem->HandleInput(InputType);
 }

@@ -6,6 +6,7 @@
 #include "Engine/LocalPlayer.h"
 #include "InputMappingContext.h"
 #include "WarriorCombatSandbox/WarriorCombatSandbox.h"
+#include <Character/Player/WarriorCharacter.h>
 
 void AWarriorController::BeginPlay()
 {
@@ -26,6 +27,8 @@ void AWarriorController::SetupInputComponent()
 			for (UInputMappingContext* CurrentContext : DefaultMappingContexts)
 			{
 				Subsystem->AddMappingContext(CurrentContext, 0);
+				UE_LOG(LogTemp, Warning, TEXT("Adding IMC: %s"), *GetNameSafe(CurrentContext));
+
 			}
 		}
 	}

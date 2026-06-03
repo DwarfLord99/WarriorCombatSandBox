@@ -38,8 +38,16 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	FName TipSocketName = "Weapon_Tip";
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	FName BladeCenterSocketName = "Weapon_BladeCenter";
+
+	// For spear/halberd/polearm weapons
 	FVector PrevBase;
 	FVector PrevTip;
+
+	// For axe/mace/hammer style weapons
+	FVector PrevCenter;
+	FVector CurrentCenter;
 
 	UPROPERTY()
 	TArray<AActor*> HitActors;

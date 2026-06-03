@@ -26,6 +26,9 @@ public:
 	void UpdateHealth(float Current, float Max);
 	void UpdateRage(float Current, float Max);
 
+	UPROPERTY()
+	UAbilityBarWidget* AbilityBar;
+
 protected:
 
 	UPROPERTY(EditDefaultsOnly, Category = "UI")
@@ -50,6 +53,6 @@ protected:
 	URageBarWidget* RageBar;
 
 	UPROPERTY()
-	UAbilityBarWidget* AbilityBar;
+	class UAbilitySystemComponent* AbilitySystem;
 	
 };

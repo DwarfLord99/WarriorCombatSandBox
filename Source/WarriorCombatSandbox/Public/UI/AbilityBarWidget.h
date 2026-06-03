@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
+#include "Combat/AbilitySystemComponent.h"
 #include "AbilityBarWidget.generated.h"
 
 /**
@@ -16,7 +17,11 @@ class WARRIORCOMBATSANDBOX_API UAbilityBarWidget : public UUserWidget
 	
 public:
 
-	void InitializeSlots(int32 NumSlots);
+	void NativeConstruct();
+	
+	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
+	
+	void InitializeBar(class UAbilitySystemComponent* InASC, int32 NumSlots);
 
 	class UAbilitySlotWidget* GetSlotWidget(int32 SlotIndex) const;
 
@@ -30,5 +35,8 @@ protected:
 
 	UPROPERTY()
 	TArray<UAbilitySlotWidget*> Slots;
+
+	UPROPERTY()
+	class UAbilitySystemComponent* AbilitySystem;
 
 };

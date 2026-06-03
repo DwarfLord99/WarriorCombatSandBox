@@ -40,11 +40,7 @@ class WARRIORCOMBATSANDBOX_API AWarriorCharacter : public ACharacter
 
 	// Health Component
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Health, meta = (AllowPrivateAccess = "true"))
-	UHealthComponent* HealthComponent;
-
-	// Ability System Component
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Abilities, meta = (AllowPrivateAccess = "true"))
-	UAbilitySystemComponent* AbilitySystem;
+	UHealthComponent* HealthComponent;	
 
 protected:
 
@@ -95,9 +91,6 @@ protected:
 	// Equipped Weapon
 	UPROPERTY()
 	AWeapon* EquippedWeapon;
-
-	UPROPERTY()
-	APlayerHUD* PlayerHUD;
 
 public:
 
@@ -165,6 +158,13 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Input")
 	virtual void DoAttack(EAbilityInput InputType);
+
+	// Ability System Component
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Abilities, meta = (AllowPrivateAccess = "true"))
+	UAbilitySystemComponent* AbilitySystem;
+
+	UPROPERTY()
+	APlayerHUD* PlayerHUD;
 
 public:
 

@@ -51,6 +51,7 @@ protected:
 	TArray<EAbilityInput> SlotInputMapping;
 
 	bool CanUseAbility(int32 SlotIndex) const;
+
 	void ActiveAbility(int32 SlotIndex);
 
 public:	

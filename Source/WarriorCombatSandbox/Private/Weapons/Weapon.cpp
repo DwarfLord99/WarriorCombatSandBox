@@ -33,14 +33,25 @@ void AWeapon::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	// Debug sphere at blade center
+	FVector BladeCenter = WeaponMesh->GetSocketLocation(BladeCenterSocketName);
+	DrawDebugSphere(
+		GetWorld(),
+		BladeCenter,
+		50.f,
+		12,
+		FColor::Red,
+		false,
+		-1.f
+	);
+
 }
 
 void AWeapon::StartTrace()
 {
 	HitActors.Empty();
 
-	PrevBase = WeaponMesh->GetSocketLocation(BaseSocketName);
-	PrevTip = WeaponMesh->GetSocketLocation(TipSocketName);
+	PrevCenter = WeaponMesh->GetSocketLocation(BladeCenterSocketName);
 }
 
 void AWeapon::EndTrace()
@@ -50,8 +61,7 @@ void AWeapon::EndTrace()
 
 AActor* AWeapon::PerformTrace()
 {
-	FVector CurrentBase = WeaponMesh->GetSocketLocation(BaseSocketName);
-	FVector CurrentTip = WeaponMesh->GetSocketLocation(TipSocketName);
+	CurrentCenter = WeaponMesh->GetSocketLocation(BladeCenterSocketName);
 
 	FHitResult Hit;
 	FCollisionQueryParams Params;
@@ -60,11 +70,11 @@ AActor* AWeapon::PerformTrace()
 
 	bool bHit = GetWorld()->SweepSingleByChannel(
 		Hit,
-		PrevTip,
-		CurrentTip,
+		PrevCenter,
+		CurrentCenter,
 		FQuat::Identity,
 		ECC_Pawn,
-		FCollisionShape::MakeSphere(10.f),
+		FCollisionShape::MakeSphere(50.f),
 		Params);
 
 	if (bHit)
@@ -77,57 +87,17 @@ AActor* AWeapon::PerformTrace()
 		}
 	}
 
-	// Debug: draw the tip movement
-	DrawDebugLine(
+	DrawDebugSphere(
 		GetWorld(),
-		PrevTip,
-		CurrentTip,
-		FColor::Red,
+		CurrentCenter,
+		50.f,
+		12,
+		FColor::Green,
 		false,
-		0.05f,
-		0,
-		1.5f
+		-1.f
 	);
 
-	// Debug: draw the base movement
-	DrawDebugLine(
-		GetWorld(),
-		PrevBase,
-		CurrentBase,
-		FColor::Blue,
-		false,
-		0.05f,
-		0,
-		1.5f
-	);
-
-	// Debug: draw the blade segment
-	DrawDebugLine(
-		GetWorld(),
-		CurrentBase,
-		CurrentTip,
-		FColor::Yellow,
-		false,
-		0.05f,
-		0,
-		1.5f
-	);
-
-	// Debug: draw hit point
-	if (bHit)
-	{
-		DrawDebugSphere(
-			GetWorld(),
-			Hit.ImpactPoint,
-			8.f,
-			12,
-			FColor::Green,
-			false,
-			0.1f
-		);
-	}
-
-
+	PrevCenter = CurrentCenter;
 	return nullptr;
 }
 

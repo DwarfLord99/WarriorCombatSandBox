@@ -7,6 +7,24 @@
 #include "Components/Overlay.h"
 #include "Components/ProgressBar.h"
 
+void UAbilitySlotWidget::InitializeSlot(int32 inIndex, UAbilitySystemComponent* InASC)
+{
+	SlotIndex = inIndex;
+	AbilitySystem = InASC;
+}
+
+void UAbilitySlotWidget::UpdateSlot()
+{
+	if (!AbilitySystem) return;
+
+	FAbilitySlotData SlotData = AbilitySystem->GetSlotData(SlotIndex);
+
+	SetSlotData(SlotData);
+
+	//UE_LOG(LogTemp, Warning, TEXT("Updating slot %d"), SlotIndex);
+
+}
+
 void UAbilitySlotWidget::SetSlotData(const FAbilitySlotData& Data)
 {
 	if (IconImage)

@@ -5,6 +5,7 @@
 #include "UI/HealthBarWidget.h"
 #include "UI/RageBarWidget.h"
 #include "UI/AbilityBarWidget.h"
+#include "Character/Player/WarriorCharacter.h"
 #include "Components/PanelWidget.h"
 
 void APlayerHUD::BeginPlay()
@@ -49,8 +50,12 @@ void APlayerHUD::BeginPlay()
 			Anchor->AddChild(AbilityBar);
 		}
 
-		AbilityBar->InitializeSlots(3);
 	}
+
+	AWarriorCharacter* Warrior = Cast<AWarriorCharacter>(GetOwningPlayerController()->GetPawn());
+
+	if (AbilityBar)
+		AbilityBar->InitializeBar(Warrior->AbilitySystem, 3);
 
 }
 

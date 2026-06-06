@@ -100,4 +100,3 @@ AActor* AWeapon::PerformTrace()
 	PrevCenter = CurrentCenter;
 	return nullptr;
 }
-

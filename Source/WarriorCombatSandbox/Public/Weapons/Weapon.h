@@ -41,6 +41,18 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	FName BladeCenterSocketName = "Weapon_BladeCenter";
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Weapon|Pose")
+	FVector CombatOffset = FVector(-24.f, -8.f, -10.f);
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon|Pose")
+	FRotator CombatRotation = FRotator(0.f, 110.f, 0.f);
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon|Pose")
+	FVector CarryOffset = FVector(-21.f, -8.f, -9.f);
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon|Pose")
+	FRotator CarryRotation = FRotator(110.f, 0.f, 90.f);
+
 	// For spear/halberd/polearm weapons
 	FVector PrevBase;
 	FVector PrevTip;

@@ -112,6 +112,11 @@ void AEnemyCharacter::RecieveDamage_Implementation(float DamageAmount)
 	}
 }
 
+void AEnemyCharacter::UpdateWalkSpeed(float NewSpeed)
+{
+	GetCharacterMovement()->MaxWalkSpeed = NewSpeed;
+}
+
 void AEnemyCharacter::HandleHealthChanged(float Current, float Max)
 {
 	if (CachedHealthBar)

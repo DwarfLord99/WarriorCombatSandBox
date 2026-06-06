@@ -17,10 +17,9 @@ class WARRIORCOMBATSANDBOX_API UAbilityBarWidget : public UUserWidget
 	
 public:
 
-	void NativeConstruct();
+	void NativeConstruct() override;
 	
 	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
-	
 	void InitializeBar(class UAbilitySystemComponent* InASC, int32 NumSlots);
 
 	class UAbilitySlotWidget* GetSlotWidget(int32 SlotIndex) const;

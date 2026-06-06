@@ -74,6 +74,9 @@ public:
 	virtual void RecieveDamage_Implementation(float DamageAmount) override;
 
 	UFUNCTION()
+	void UpdateWalkSpeed(float NewSpeed);
+
+	UFUNCTION()
 	void HandleDeath();
 
 	UFUNCTION()

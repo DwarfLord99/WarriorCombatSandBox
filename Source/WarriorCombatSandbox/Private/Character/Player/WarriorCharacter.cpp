@@ -175,7 +175,6 @@ void AWarriorCharacter::BeginPlay()
 			UE_LOG(LogWarriorCharacter, Error, TEXT("'%s' Failed to find Combat Component to set equipped weapon!"), *GetNameSafe(this));
 		}
 	}
-
 }
 
 void AWarriorCharacter::Move(const FInputActionValue& Value)
@@ -289,8 +288,6 @@ void AWarriorCharacter::DoAttack(EAbilityInput InputType)
 		UE_LOG(LogWarriorCharacter, Error, TEXT("'%s' Failed to find Ability System Component!"), *GetNameSafe(this));
 		return;
 	}
-
-	UE_LOG(LogTemp, Warning, TEXT("Input Attack with type: %d"), static_cast<uint8>(InputType));
 
 	AbilitySystem->HandleInput(InputType);
 }

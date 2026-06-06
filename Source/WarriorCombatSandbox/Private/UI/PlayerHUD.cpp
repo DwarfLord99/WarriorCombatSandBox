@@ -49,14 +49,14 @@ void APlayerHUD::BeginPlay()
 		{
 			Anchor->AddChild(AbilityBar);
 		}
-
 	}
 
 	AWarriorCharacter* Warrior = Cast<AWarriorCharacter>(GetOwningPlayerController()->GetPawn());
 
 	if (AbilityBar)
+	{
 		AbilityBar->InitializeBar(Warrior->AbilitySystem, 3);
-
+	}
 }
 
 void APlayerHUD::UpdateHealth(float Current, float Max)

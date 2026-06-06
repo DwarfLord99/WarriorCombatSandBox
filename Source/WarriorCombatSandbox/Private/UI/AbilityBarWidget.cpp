@@ -9,9 +9,7 @@
 void UAbilityBarWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
-	UE_LOG(LogTemp, Warning, TEXT("AbilityBarWidget Constructed"));
 }
-
 
 void UAbilityBarWidget::InitializeBar(UAbilitySystemComponent* InASC, int32 NumSlots)
 {
@@ -31,9 +29,6 @@ void UAbilityBarWidget::InitializeBar(UAbilitySystemComponent* InASC, int32 NumS
 		SlotContainer->AddChild(ASlot);
 		Slots.Add(ASlot);
 	}
-
-	UE_LOG(LogTemp, Warning, TEXT("InitializeBar called. ASC = %s"), *GetNameSafe(InASC));
-	UE_LOG(LogTemp, Warning, TEXT("NumSlots = %d"), NumSlots);
 }
 
 UAbilitySlotWidget* UAbilityBarWidget::GetSlotWidget(int32 SlotIndex) const
@@ -52,7 +47,4 @@ void UAbilityBarWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTim
 			ASlot->UpdateSlot();
 		}
 	}
-
-	//UE_LOG(LogTemp, Warning, TEXT("AbilityBar Tick: %d slots"), Slots.Num());
-
 }

@@ -20,17 +20,18 @@ DECLARE_LOG_CATEGORY_EXTERN(LogEnemyCharacter, Log, All);
 UCLASS()
 class WARRIORCOMBATSANDBOX_API AEnemyCharacter : public ACharacter, public IDamageable
 {
-	GENERATED_BODY()
-
-	// Combat Component
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Combat, meta = (AllowPrivateAccess = "true"))
-	UCombatComponent* CombatComponent;
+	GENERATED_BODY()	
 
 	// Health Component
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Health, meta = (AllowPrivateAccess = "true"))
 	UHealthComponent* HealthComponent;
 
 public:
+
+	// Combat Component
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	UCombatComponent* CombatComponent;
+
 	// Sets default values for this character's properties
 	AEnemyCharacter();
 
@@ -90,5 +91,11 @@ public:
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
 	bool bIsDead = false;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	bool bCanAttack = false;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	bool bPlayerDetected = false;
 
 };

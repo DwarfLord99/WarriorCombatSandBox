@@ -69,7 +69,8 @@ void UCombatComponent::TryUseAbility_AI(UAbilityData* AbilityData)
 		return;
 	}
 
-	ExecuteAbility(AbilityData);
+	if (!bIsAttacking)
+		ExecuteAbility(AbilityData);
 }
 
 bool UCombatComponent::CanUseAbility(UAbilityData* AbilityData)

@@ -4,19 +4,22 @@
 
 #include "CoreMinimal.h"
 #include "BehaviorTree/BTTaskNode.h"
-#include "ChasePlayer.generated.h"
+#include "CombatPlayer.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class WARRIORCOMBATSANDBOX_API UChasePlayer : public UBTTaskNode
+class WARRIORCOMBATSANDBOX_API UCombatPlayer : public UBTTaskNode
 {
 	GENERATED_BODY()
 	
-public:
+protected:
+
 	virtual EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
 
-	UPROPERTY(EditAnywhere, Category = "Chase")
-	float ChaseSpeed = 500.0f;
+public:
+
+	UPROPERTY(EditAnywhere, Category = "Combat")
+	FBlackboardKeySelector EnemyActorKey;
 };

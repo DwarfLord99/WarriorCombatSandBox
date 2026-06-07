@@ -94,6 +94,12 @@ void AEnemyCharacter::Tick(float DeltaTime)
 	if (!CachedCameraManager) return;
 
 	HealthBarWidget->SetWorldRotation((CachedCameraManager->GetCameraLocation() - HealthBarWidget->GetComponentLocation()).Rotation());
+
+	// check if velocity is zero and if it is, set bCanAttack to true, otherwise set it to false
+	bCanAttack = GetVelocity().IsZero();
+
+	if (bCanAttack && bPlayerDetected)
+		BasicAttack();
 }
 
 // Called to bind functionality to input

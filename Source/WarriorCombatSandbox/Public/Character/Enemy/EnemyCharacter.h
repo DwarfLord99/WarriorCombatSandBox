@@ -54,9 +54,6 @@ protected:
 	UPROPERTY()
 	FTimerHandle HideHealthBarTimer;
 
-	UPROPERTY(EditAnywhere, Category = "Combat")
-	UAbilityData* BasicAttackData;
-
 	// Weapon
 	UPROPERTY(EditAnywhere, Category = Equipment)
 	TSubclassOf<AWeapon> WeaponClass;
@@ -74,6 +71,12 @@ public:
 
 	virtual void RecieveDamage_Implementation(float DamageAmount) override;
 
+	UPROPERTY(EditAnywhere, Category = "Combat")
+	UAbilityData* BasicAttackData;
+
+	UPROPERTY(EditAnywhere, Category = "Combat")
+	UAbilityData* HeavyAttackData;
+
 	UFUNCTION()
 	void UpdateWalkSpeed(float NewSpeed);
 
@@ -87,7 +90,10 @@ public:
 	void HideHealthBar();
 
 	UFUNCTION(BlueprintCallable, Category = "Combat")
-	void BasicAttack();
+	bool CanUseAbility(UAbilityData* AbilityData);
+
+	UFUNCTION(BlueprintCallable, Category = "Combat")
+	void HandleAttack(UAbilityData* AbilityData);
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
 	bool bIsDead = false;

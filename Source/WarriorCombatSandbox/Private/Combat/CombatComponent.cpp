@@ -70,7 +70,10 @@ void UCombatComponent::TryUseAbility_AI(UAbilityData* AbilityData)
 	}
 
 	if (!bIsAttacking)
+	{
 		ExecuteAbility(AbilityData);
+		StartCooldown(AbilityData);
+	}
 }
 
 bool UCombatComponent::CanUseAbility(UAbilityData* AbilityData)
@@ -82,7 +85,8 @@ bool UCombatComponent::CanUseAbility(UAbilityData* AbilityData)
 	if (OwnerCharacter && OwnerCharacter->GetCharacterMovement()->IsFalling())
 		return false;
 
-	return true;
+	const float* TimeRemaining = CooldownTimers.Find(AbilityData);
+	return !TimeRemaining || *TimeRemaining <= 0.f;
 }
 
 void UCombatComponent::ExecuteAbility(UAbilityData* AbilityData)
@@ -141,6 +145,14 @@ bool UCombatComponent::IsAbilityOnCooldown(EAbilityInput InputType, const UAbili
 	return TimeSinceUse < AbilityData->CooldownTime;
 }
 
+void UCombatComponent::StartCooldown(UAbilityData* AbilityData)
+{
+	if (!AbilityData)
+		return;
+
+	CooldownTimers.Add(AbilityData, AbilityData->CooldownTime);
+}
+
 void UCombatComponent::OnAttackMontageEnded(UAnimMontage* Montage, bool bInterrupted)
 {
 	ACharacter* OwnerCharacter = Cast<ACharacter>(GetOwner());
@@ -194,6 +206,14 @@ void UCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	// ...
+	for (auto& Pair : CooldownTimers)
+	{
+		if (Pair.Value > 0.f)
+		{
+			Pair.Value -= DeltaTime;
+			if (Pair.Value < 0.f)
+				Pair.Value = 0.f;
+		}
+	}
 }
 

@@ -9,12 +9,39 @@ EBTNodeResult::Type UCombatPlayer::ExecuteTask(UBehaviorTreeComponent& OwnerComp
 {
 	AEnemyCharacter* Self = Cast<AEnemyCharacter>(OwnerComp.GetAIOwner()->GetPawn());
 
-	if (Self)
+	if (!Self)
+		return EBTNodeResult::Failed;
+
+	UE_LOG(LogTemp, Warning, TEXT("'%s' is attacking Player."), *OwnerComp.GetAIOwner()->GetName());
+
+	// Select ability
+	UAbilityData* SelectedAbility = SelectAbility(Self);
+
+	if (SelectedAbility == nullptr)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("'%s' is attacking Player."), *OwnerComp.GetAIOwner()->GetName());
-		Self->BasicAttack();
+		UE_LOG(LogTemp, Warning, TEXT("No available abilities to use."));
 		return EBTNodeResult::Succeeded;
 	}
 
-	return EBTNodeResult::Failed;
+	// Use ability
+	Self->HandleAttack(SelectedAbility);
+
+	return EBTNodeResult::Succeeded;
+}
+
+UAbilityData* UCombatPlayer::SelectAbility(AEnemyCharacter* Enemy)
+{
+	if (Enemy->CanUseAbility(Enemy->HeavyAttackData))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Selected Heavy Attack"));
+		return Enemy->HeavyAttackData;
+	}
+	
+	if (Enemy->CanUseAbility(Enemy->BasicAttackData))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Selected Basic Attack"));
+		return Enemy->BasicAttackData;
+	}
+
+	return nullptr;
 }

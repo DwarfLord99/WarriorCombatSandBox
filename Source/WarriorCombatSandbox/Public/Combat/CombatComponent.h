@@ -85,5 +85,11 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Combat")
 	bool IsAbilityOnCooldown(EAbilityInput InputType, const UAbilityData* AbilityData) const;
 
+	UFUNCTION(BlueprintCallable, Category = "Combat")
+	void StartCooldown(UAbilityData* AbilityData);
+
+	UPROPERTY()
+	TMap<UAbilityData*, float> CooldownTimers;
+
 	bool bIsAttacking = false;
 };

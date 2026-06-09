@@ -95,11 +95,8 @@ void AEnemyCharacter::Tick(float DeltaTime)
 
 	HealthBarWidget->SetWorldRotation((CachedCameraManager->GetCameraLocation() - HealthBarWidget->GetComponentLocation()).Rotation());
 
-	// check if velocity is zero and if it is, set bCanAttack to true, otherwise set it to false
+	// if in range and not currently attacking, try to attack
 	bCanAttack = GetVelocity().IsZero();
-
-	if (bCanAttack && bPlayerDetected)
-		BasicAttack();
 }
 
 // Called to bind functionality to input
@@ -139,11 +136,23 @@ void AEnemyCharacter::HideHealthBar()
 	CachedHealthBar->SetVisibility(ESlateVisibility::Hidden);
 }
 
-void AEnemyCharacter::BasicAttack()
+bool AEnemyCharacter::CanUseAbility(UAbilityData* AbilityData)
 {
 	if (CombatComponent && !bIsDead)
 	{
-		CombatComponent->TryUseAbility_AI(BasicAttackData);
+		return CombatComponent->CanUseAbility(AbilityData);
+	}
+	else
+	{
+		return false;
+	}
+}
+
+void AEnemyCharacter::HandleAttack(UAbilityData* AbilityData)
+{
+	if (CombatComponent && !bIsDead && bCanAttack)
+	{
+		CombatComponent->TryUseAbility_AI(AbilityData);
 	}
 }
 

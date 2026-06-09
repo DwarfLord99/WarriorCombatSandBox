@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "BehaviorTree/BTTaskNode.h"
+#include "Combat/AbilityData.h"
 #include "CombatPlayer.generated.h"
 
 /**
@@ -20,6 +21,6 @@ protected:
 
 public:
 
-	UPROPERTY(EditAnywhere, Category = "Combat")
-	FBlackboardKeySelector EnemyActorKey;
+	UFUNCTION()
+	UAbilityData* SelectAbility(AEnemyCharacter* Enemy);
 };

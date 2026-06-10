@@ -4,6 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "Combat/AbilityData.h"
+#include "Combat/CombatComponent.h"
 #include "HealthComponent.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnHealthChanged, float, NewHealth, float, Delta);
@@ -33,6 +35,9 @@ protected:
 	UPROPERTY()
 	bool bIsDead = false;
 
+	UPROPERTY()
+	UCombatComponent* OwnerCombatComponent;
+
 public:	
 	
 	UPROPERTY(BlueprintAssignable, Category = "Health")
@@ -45,7 +50,7 @@ public:
 	UAnimMontage* HitReactMontage;
 
 	UFUNCTION(BlueprintCallable, Category = "Health")
-	void ApplyDamage(float DamageAmount);
+	void ApplyDamage(float DamageAmount, UAbilityData* AbilityData);
 
 	UFUNCTION(BlueprintCallable, Category = "Health")
 	void Heal(float HealAmount);

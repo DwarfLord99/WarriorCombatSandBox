@@ -38,7 +38,6 @@ EBTNodeResult::Type UPursuePlayer::ExecuteTask(UBehaviorTreeComponent& OwnerComp
 	{
 		Self->UpdateWalkSpeed(ChaseSpeed);
 		Self->bPlayerDetected = true;
-		UE_LOG(LogTemp, Warning, TEXT("'%s' is executing EngagePlayerCombat task. Moving towards target: %s"), *AIController->GetName(), *TargetActor->GetName());
 		return EBTNodeResult::Succeeded;
 	}
 

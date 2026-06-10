@@ -48,8 +48,16 @@ void UCombatComponent::TryUseAbility(EAbilityInput InputType, UAbilityData* Abil
 		return;
 	}
 
-	// Then call the shared version
-	ExecuteAbility(AbilityData);
+	// Check if ability is cast
+	if (AbilityData->CastTime > 0.f)
+	{
+		BeginCast(AbilityData);
+		return;
+	}
+	else
+	{
+		ExecuteAbility(AbilityData);
+	}
 
 	// If successful, record cooldown
 	LastUsedTime.Add(InputType, GetWorld()->GetTimeSeconds());
@@ -63,6 +71,12 @@ void UCombatComponent::TryUseAbility_AI(UAbilityData* AbilityData)
 		return;
 	}
 
+	// If already casting an ability, don't interrupt it
+	if (bIsCasting)
+	{
+		return;
+	}
+
 	if (!CanUseAbility(AbilityData))
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Cannot use ability: %s"), *AbilityData->GetName());
@@ -71,8 +85,17 @@ void UCombatComponent::TryUseAbility_AI(UAbilityData* AbilityData)
 
 	if (!bIsAttacking)
 	{
-		ExecuteAbility(AbilityData);
-		StartCooldown(AbilityData);
+		// Check if ability is cast
+		if (AbilityData->CastTime > 0.f)
+		{
+			BeginCast(AbilityData);
+			return;
+		}
+		else
+		{
+			ExecuteAbility(AbilityData);
+			StartCooldown(AbilityData);
+		}
 	}
 }
 
@@ -153,6 +176,55 @@ void UCombatComponent::StartCooldown(UAbilityData* AbilityData)
 	CooldownTimers.Add(AbilityData, AbilityData->CooldownTime);
 }
 
+void UCombatComponent::BeginCast(UAbilityData* AbilityData)
+{
+	bIsCasting = true;
+	CastTimer = 0.f;
+
+	CastingAbilityData = AbilityData;
+
+	OnBeginCast.Broadcast();
+}
+
+void UCombatComponent::FinishCast()
+{
+	bIsCasting = false;
+
+	ExecuteAbility(CastingAbilityData);
+	StartCooldown(CastingAbilityData);
+	CastingAbilityData = nullptr;
+
+	OnFinishCast.Broadcast();
+}
+
+void UCombatComponent::InterruptCast()
+{
+	if (!bIsCasting || !CastingAbilityData)
+		return;
+
+	// stop casting
+	bIsCasting = false;
+	CastTimer = 0.f;
+
+	// Apply interrupt cooldown
+	CooldownTimers.Add(CastingAbilityData, CastingAbilityData->CooldownTime);
+
+	CastingAbilityData = nullptr;
+
+	OnInterruptCast.Broadcast();
+}
+
+float UCombatComponent::GetCastPercent() const
+{
+	if (!bIsCasting || !CastingAbilityData) return 0.f;
+	return CastTimer / CastingAbilityData->CastTime;
+}
+
+bool UCombatComponent::IsAbilityInterruptible() const
+{
+	return bIsCasting && CastingAbilityData && CastingAbilityData->bIsInterruptible;
+}
+
 void UCombatComponent::OnAttackMontageEnded(UAnimMontage* Montage, bool bInterrupted)
 {
 	ACharacter* OwnerCharacter = Cast<ACharacter>(GetOwner());
@@ -185,7 +257,7 @@ void UCombatComponent::ApplyDamage(AActor* Target, float DamageAmount)
 	UHealthComponent* Health = Target->FindComponentByClass<UHealthComponent>();
 	if (Health)
 	{
-		Health->ApplyDamage(DamageAmount);
+		Health->ApplyDamage(DamageAmount, CurrentAbilityData);
 	}
 }
 
@@ -215,5 +287,14 @@ void UCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 				Pair.Value = 0.f;
 		}
 	}
-}
 
+	if (bIsCasting && CastingAbilityData)
+	{
+		CastTimer += DeltaTime;
+
+		if (CastTimer >= CastingAbilityData->CastTime)
+		{
+			FinishCast();
+		}
+	}
+}

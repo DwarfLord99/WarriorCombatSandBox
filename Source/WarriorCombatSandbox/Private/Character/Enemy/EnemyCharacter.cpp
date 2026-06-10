@@ -25,9 +25,35 @@ AEnemyCharacter::AEnemyCharacter()
 	CombatComponent = CreateDefaultSubobject<UCombatComponent>(TEXT("CombatComponent"));
 	HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComponent"));
 
-	// Enemy health bar widget
+	// Set up health bar widget
 	HealthBarWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("HealthBarWidget"));
 	HealthBarWidget->SetupAttachment(RootComponent);
+
+	HealthBarWidget->SetWidgetSpace(EWidgetSpace::Screen);
+	HealthBarWidget->SetDrawSize(FVector2D(150.f, 20.f));
+	HealthBarWidget->SetVisibility(true);
+
+	HealthBarWidget->SetRelativeLocation(FVector(0.f, 0.f, 220.f));
+
+	// Set up rage bar widget
+	RageBarWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("RageBarWidget"));
+	RageBarWidget->SetupAttachment(RootComponent);
+
+	RageBarWidget->SetWidgetSpace(EWidgetSpace::Screen);
+	RageBarWidget->SetDrawSize(FVector2D(150.f, 20.f));
+	RageBarWidget->SetVisibility(true);
+
+	RageBarWidget->SetRelativeLocation(FVector(0.f, 0.f, 120.f));
+
+	// Set up cast bar widget
+	CastBarWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("CastBarWidget"));
+	CastBarWidget->SetupAttachment(RootComponent);
+
+	CastBarWidget->SetWidgetSpace(EWidgetSpace::Screen);
+	CastBarWidget->SetDrawSize(FVector2D(150.f, 20.f));
+	CastBarWidget->SetVisibility(true);
+
+	CastBarWidget->SetRelativeLocation(FVector(0.f, 0.f, 170.f));
 }
 
 // Called when the game starts or when spawned
@@ -37,26 +63,114 @@ void AEnemyCharacter::BeginPlay()
 	
 	CachedCameraManager = GetWorld()->GetFirstPlayerController()->PlayerCameraManager;
 
+	// Health bar cache
 	if (HealthBarWidget)
 	{
-		UEnemyHealthBar* HealthBar = Cast<UEnemyHealthBar>(HealthBarWidget->GetUserWidgetObject());
-		CachedHealthBar = HealthBar;
-	}
+		if (UUserWidget* Widget = HealthBarWidget->GetUserWidgetObject())
+		{
+			CachedHealthBar = Cast<UEnemyHealthBar>(Widget);
+			if (!CachedHealthBar)
+			{
+				UE_LOG(LogEnemyCharacter, Error, TEXT("'%s' Failed to cast health bar widget to UEnemyHealthBar!"), *GetNameSafe(this));
+			}
+		}
+		else
+		{
+			UE_LOG(LogEnemyCharacter, Error, TEXT("'%s' Failed to get user widget object from health bar widget component!"), *GetNameSafe(this));
+		}
+	}	
 
 	if (HealthComponent)
 	{
 		HealthComponent->OnHealthChanged.AddDynamic(this, &AEnemyCharacter::HandleHealthChanged);
 		HealthComponent->OnDeath.AddDynamic(this, &AEnemyCharacter::HandleDeath);
 	}
+	else
+	{
+		UE_LOG(LogEnemyCharacter, Error, TEXT("'%s' Failed to find Health Component to bind health changed and death events!"), *GetNameSafe(this));
+	}
 
 	if (CachedHealthBar && HealthComponent)
 	{
 		CachedHealthBar->UpdateHealthBar(HealthComponent->GetCurrentHealth(), HealthComponent->GetMaxHealth());
+		CachedHealthBar->SetVisibility(ESlateVisibility::Hidden);
+	}
+	else
+	{
+		UE_LOG(LogEnemyCharacter, Error, TEXT("'%s' Failed to cache health bar or health component!"), *GetNameSafe(this));
 	}
 
-	if (CachedHealthBar)
+	// Rage bar cache
+	if (RageBarWidget)
 	{
-		CachedHealthBar->SetVisibility(ESlateVisibility::Hidden);
+		if (UUserWidget* Widget = RageBarWidget->GetUserWidgetObject())
+		{
+			CachedRageBar = Cast<UEnemyRageBar>(Widget);
+			if (!CachedRageBar)
+			{
+				UE_LOG(LogEnemyCharacter, Error, TEXT("'%s' Failed to cast rage bar widget to UEnemyRageBar!"), *GetNameSafe(this));
+			}
+		}
+		else
+		{
+			UE_LOG(LogEnemyCharacter, Error, TEXT("'%s' Failed to get user widget object from rage bar widget component!"), *GetNameSafe(this));
+		}
+	}
+
+	if (CombatComponent)
+	{
+		CombatComponent->OnRageChanged.AddDynamic(this, &AEnemyCharacter::HandleRageChanged);
+	}
+	else
+	{
+		UE_LOG(LogEnemyCharacter, Error, TEXT("'%s' Failed to find Combat Component to bind rage changed event!"), *GetNameSafe(this));
+	}
+
+	if (CachedRageBar && CombatComponent)
+	{
+		CachedRageBar->UpdateRageBar(CombatComponent->GetCurrentRage(), CombatComponent->GetMaxRage());
+		CachedRageBar->SetVisibility(ESlateVisibility::Hidden);
+	}
+	else
+	{
+		UE_LOG(LogEnemyCharacter, Error, TEXT("'%s' Failed to cache rage bar or combat component!"), *GetNameSafe(this));
+	}
+
+	// Cast bar cache
+	if (CastBarWidget)
+	{
+		if (UUserWidget* Widget = CastBarWidget->GetUserWidgetObject())
+		{
+			CachedCastBar = Cast<UEnemyCastBar>(Widget);
+			if (!CachedCastBar)
+			{
+				UE_LOG(LogEnemyCharacter, Error, TEXT("'%s' Failed to cast cast bar widget to UEnemyCastBar!"), *GetNameSafe(this));
+			}
+		}
+		else
+		{
+			UE_LOG(LogEnemyCharacter, Error, TEXT("'%s' Failed to get user widget object from cast bar widget component!"), *GetNameSafe(this));
+		}
+	}
+
+	if (CachedCastBar)
+	{
+		CachedCastBar->SetVisibility(ESlateVisibility::Hidden);
+	}
+	else
+	{
+		UE_LOG(LogEnemyCharacter, Error, TEXT("'%s' Failed to cache cast bar!"), *GetNameSafe(this));
+	}
+
+	if (CombatComponent)
+	{
+		CombatComponent->OnBeginCast.AddDynamic(this, &AEnemyCharacter::HandleBeginCast);
+		CombatComponent->OnFinishCast.AddDynamic(this, &AEnemyCharacter::HandleFinishCast);
+		CombatComponent->OnInterruptCast.AddDynamic(this, &AEnemyCharacter::HandleInterruptCast);
+	}
+	else
+	{
+		UE_LOG(LogEnemyCharacter, Error, TEXT("'%s' Failed to find Combat Component to bind cast started and finished events!"), *GetNameSafe(this));
 	}
 
 	// Set up weapon
@@ -89,13 +203,28 @@ void AEnemyCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if (!HealthBarWidget) return;
-
 	if (!CachedCameraManager) return;
 
-	HealthBarWidget->SetWorldRotation((CachedCameraManager->GetCameraLocation() - HealthBarWidget->GetComponentLocation()).Rotation());
+	// Rotate health bar to face camera
+	if (HealthBarWidget && CachedCameraManager)
+	{
+		const FRotator LookAt = (CachedCameraManager->GetCameraLocation() - HealthBarWidget->GetComponentLocation()).Rotation();
+		HealthBarWidget->SetWorldRotation(LookAt);
+	}
 
-	// if in range and not currently attacking, try to attack
+	// Update cast bar percent
+	if (CastBarWidget && CachedCastBar && CombatComponent && CombatComponent->IsCasting())
+	{
+		float CastPercent = CombatComponent->GetCastPercent();
+		CachedCastBar->UpdateCastBar(CastPercent);
+
+		// Rotate cast bar to face camera
+		const FRotator LookAt = (CachedCameraManager->GetCameraLocation() - CastBarWidget->GetComponentLocation()).Rotation();
+
+		CastBarWidget->SetWorldRotation(LookAt);
+	}
+
+	// Allows enemy to attack once they stop chasing player
 	bCanAttack = GetVelocity().IsZero();
 }
 
@@ -110,7 +239,7 @@ void AEnemyCharacter::RecieveDamage_Implementation(float DamageAmount)
 {
 	if (HealthComponent && !bIsDead)
 	{
-		HealthComponent->ApplyDamage(DamageAmount);
+		HealthComponent->ApplyDamage(DamageAmount, CombatComponent->CurrentAbilityData);
 		UE_LOG(LogEnemyCharacter, Warning, TEXT("Enemy received %f damage, current health: %f"), DamageAmount, HealthComponent->GetCurrentHealth());
 	}
 }
@@ -124,16 +253,59 @@ void AEnemyCharacter::HandleHealthChanged(float Current, float Max)
 {
 	if (CachedHealthBar)
 	{
-		CachedHealthBar->SetVisibility(ESlateVisibility::Visible);
 		CachedHealthBar->UpdateHealthBar(Current, HealthComponent->GetMaxHealth());
+		CachedHealthBar->SetVisibility(ESlateVisibility::Visible);
+		CachedRageBar->SetVisibility(ESlateVisibility::Visible);
 
-		GetWorldTimerManager().SetTimer(HideHealthBarTimer, this, &AEnemyCharacter::HideHealthBar, 3.5f, false);
+		UE_LOG(LogTemp, Warning, TEXT("Enemy Health Changed: %f / %f"), Current, HealthComponent->GetMaxHealth());
+	}
+
+	// Reset health bar hide timer
+	GetWorld()->GetTimerManager().ClearTimer(HealthBarHideTimer);
+	GetWorld()->GetTimerManager().SetTimer(HealthBarHideTimer, this, &AEnemyCharacter::HideHealthBar, 3.f, false);
+}
+
+void AEnemyCharacter::HandleRageChanged(float Current, float Max)
+{
+	if (CachedRageBar)
+	{
+		CachedRageBar->UpdateRageBar(Current, CombatComponent->GetMaxRage());
+		UE_LOG(LogTemp, Warning, TEXT("Enemy Rage Changed: %f / %f"), Current, CombatComponent->GetMaxRage());
+	}
+}
+
+void AEnemyCharacter::HandleBeginCast()
+{
+	if (CachedCastBar)
+	{
+		CachedCastBar->SetVisibility(ESlateVisibility::Visible);
+		CachedCastBar->UpdateCastBar(0.f);
+	}
+}
+
+void AEnemyCharacter::HandleFinishCast()
+{
+	if (CachedCastBar)
+	{
+		CachedCastBar->SetVisibility(ESlateVisibility::Hidden);
+	}
+}
+
+void AEnemyCharacter::HandleInterruptCast()
+{
+	if (CachedCastBar)
+	{
+		CachedCastBar->SetVisibility(ESlateVisibility::Hidden);
 	}
 }
 
 void AEnemyCharacter::HideHealthBar()
 {
-	CachedHealthBar->SetVisibility(ESlateVisibility::Hidden);
+	if (CachedHealthBar)
+	{
+		CachedHealthBar->SetVisibility(ESlateVisibility::Hidden);
+		CachedRageBar->SetVisibility(ESlateVisibility::Hidden);
+	}
 }
 
 bool AEnemyCharacter::CanUseAbility(UAbilityData* AbilityData)
@@ -159,6 +331,14 @@ void AEnemyCharacter::HandleAttack(UAbilityData* AbilityData)
 void AEnemyCharacter::HandleDeath()
 {
 	bIsDead = true;
+
+	// Hide health bar
+	if (CachedHealthBar)
+	{
+		CachedHealthBar->SetVisibility(ESlateVisibility::Hidden);
+		CachedRageBar->SetVisibility(ESlateVisibility::Hidden);
+	}
+
 
 	// Disable collision
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);

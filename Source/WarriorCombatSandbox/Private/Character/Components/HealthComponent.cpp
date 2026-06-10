@@ -20,9 +20,11 @@ void UHealthComponent::BeginPlay()
 	Super::BeginPlay();
 	CurrentHealth = MaxHealth;
 	OnHealthChanged.Broadcast(CurrentHealth, 0.f);
+
+	OwnerCombatComponent = GetOwner()->FindComponentByClass<UCombatComponent>();
 }
 
-void UHealthComponent::ApplyDamage(float DamageAmount)
+void UHealthComponent::ApplyDamage(float DamageAmount, UAbilityData* AbilityData)
 {
 	if (DamageAmount <= 0.f || CurrentHealth <= 0.f)
 		return;
@@ -30,6 +32,28 @@ void UHealthComponent::ApplyDamage(float DamageAmount)
 	float OldHealth = CurrentHealth;
 	CurrentHealth = FMath::Clamp(CurrentHealth - DamageAmount, 0.f, MaxHealth);
 	UE_LOG(LogTemp, Log, TEXT("Health changed: %f -> %f"), OldHealth, CurrentHealth);
+
+	if (!AbilityData)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("ApplyDamage called with NULL AbilityData"));
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("ApplyDamage called with ability: %s (CanInterrupt=%s)"),
+			*AbilityData->GetName(),
+			AbilityData->bCanInterrupt ? TEXT("true") : TEXT("false"));
+	}
+
+
+
+	if (AbilityData && AbilityData->bCanInterrupt)
+	{
+		if (OwnerCombatComponent && OwnerCombatComponent->IsAbilityInterruptible())
+		{
+			OwnerCombatComponent->InterruptCast();
+			UE_LOG(LogTemp, Log, TEXT("Cast interrupted"));
+		}
+	}
 
 	if (!bIsDead)
 	{

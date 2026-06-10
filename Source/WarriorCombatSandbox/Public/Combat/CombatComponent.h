@@ -11,6 +11,9 @@
 #include "CombatComponent.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnRageChanged, float, NewRage, float, Delta);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnBeginCast);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnFinishCast);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnInterruptCast);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class WARRIORCOMBATSANDBOX_API UCombatComponent : public UActorComponent
@@ -31,9 +34,6 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat")
 	float CurrentRage;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat")
-	UAbilityData* CurrentAbilityData;
-
 	UFUNCTION(BlueprintCallable, Category = "Combat")
 	void OnAttackMontageEnded(UAnimMontage* Montage, bool bInterrupted);
 
@@ -49,8 +49,20 @@ public:
 
 	void SetEquippedWeapon(AWeapon* NewWeapon) { EquippedWeapon = NewWeapon; }
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat")
+	UAbilityData* CurrentAbilityData;
+
 	UPROPERTY(BlueprintAssignable, Category = "Combat")
 	FOnRageChanged OnRageChanged;
+
+	UPROPERTY(BlueprintAssignable, Category = "Combat")
+	FOnBeginCast OnBeginCast;
+
+	UPROPERTY(BlueprintAssignable, Category = "Combat")
+	FOnFinishCast OnFinishCast;
+
+	UPROPERTY(BlueprintAssignable, Category = "Combat")
+	FOnInterruptCast OnInterruptCast;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat")
 	AWeapon* EquippedWeapon;
@@ -88,8 +100,30 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Combat")
 	void StartCooldown(UAbilityData* AbilityData);
 
+	UFUNCTION(BlueprintCallable, Category = "Combat")
+	void BeginCast(UAbilityData* AbilityData);
+
+	UFUNCTION(BlueprintCallable, Category = "Combat")
+	void FinishCast();
+
+	UFUNCTION(BlueprintCallable, Category = "Combat")
+	void InterruptCast();
+
+	UFUNCTION(BlueprintCallable, Category = "Combat")
+	bool IsCasting() const { return bIsCasting; }
+
+	UFUNCTION(BlueprintCallable, Category = "Combat")
+	float GetCastPercent() const;
+
+	UFUNCTION(BlueprintCallable, Category = "Combat")
+	bool IsAbilityInterruptible() const;
+
 	UPROPERTY()
 	TMap<UAbilityData*, float> CooldownTimers;
 
 	bool bIsAttacking = false;
+
+	bool bIsCasting = false;
+	UAbilityData* CastingAbilityData = nullptr;
+	float CastTimer = 0.f;
 };

@@ -28,8 +28,23 @@ public:
 	float DamageAmount;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Ability")
+	bool bIsCasted = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Ability")
+	float CastTime;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Ability")
+	bool bIsInterruptible = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Ability")
+	float InterruptCooldown;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Ability")
 	UAnimMontage* AttackMontage;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Ability")
 	UTexture2D* IconImage;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Ability")
+	bool bCanInterrupt = false;
 };

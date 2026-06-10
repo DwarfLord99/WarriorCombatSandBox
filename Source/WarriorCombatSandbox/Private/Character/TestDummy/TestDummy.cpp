@@ -68,7 +68,7 @@ void ATestDummy::RecieveDamage_Implementation(float DamageAmount)
 {
 	if (HealthComponent && !bIsDead)
 	{
-		HealthComponent->ApplyDamage(DamageAmount);
+		//HealthComponent->ApplyDamage(DamageAmount);S
 		UE_LOG(LogTemp, Warning, TEXT("TestDummy received %f damage, current health: %f"), DamageAmount, HealthComponent->GetCurrentHealth());
 	}
 }

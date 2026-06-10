@@ -11,6 +11,8 @@
 #include "Combat/Damageable.h"
 #include "Weapons/Weapon.h"
 #include "UI/EnemyHealthBar.h"
+#include "UI/EnemyRageBar.h"
+#include "UI/EnemyCastBar.h"
 #include "EnemyCharacter.generated.h"
 
 class UWidgetComponent;
@@ -39,14 +41,26 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "UI")
 	UWidgetComponent* HealthBarWidget;
 
 	UPROPERTY()
-	APlayerCameraManager* CachedCameraManager;
+	UEnemyHealthBar* CachedHealthBar;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "UI")
+	UWidgetComponent* RageBarWidget;
 
 	UPROPERTY()
-	UEnemyHealthBar* CachedHealthBar;
+	UEnemyRageBar* CachedRageBar;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "UI")
+	UWidgetComponent* CastBarWidget;
+
+	UPROPERTY()
+	UEnemyCastBar* CachedCastBar;
+
+	UPROPERTY()
+	APlayerCameraManager* CachedCameraManager;
 
 	UPROPERTY(EditDefaultsOnly, Category = "AnimMontage")
 	UAnimMontage* DeathMontage;
@@ -61,6 +75,8 @@ protected:
 	// Equipped Weapon
 	UPROPERTY()
 	AWeapon* EquippedWeapon;
+
+	FTimerHandle HealthBarHideTimer;
 
 public:	
 	// Called every frame
@@ -85,6 +101,18 @@ public:
 
 	UFUNCTION()
 	void HandleHealthChanged(float Current, float Max);
+
+	UFUNCTION()
+	void HandleRageChanged(float Current, float Max);
+
+	UFUNCTION()
+	void HandleBeginCast();
+
+	UFUNCTION()
+	void HandleFinishCast();
+
+	UFUNCTION()
+	void HandleInterruptCast();
 
 	UFUNCTION()
 	void HideHealthBar();

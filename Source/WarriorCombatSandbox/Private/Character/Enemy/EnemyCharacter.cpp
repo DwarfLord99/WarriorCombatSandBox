@@ -6,6 +6,8 @@
 #include "Components/WidgetComponent.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Controller/EnemyAIController.h"
+#include "BehaviorTree/BlackboardComponent.h"
 
 DEFINE_LOG_CATEGORY(LogEnemyCharacter);
 
@@ -24,6 +26,17 @@ AEnemyCharacter::AEnemyCharacter()
 	// Attach combat and health components
 	CombatComponent = CreateDefaultSubobject<UCombatComponent>(TEXT("CombatComponent"));
 	HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComponent"));
+
+	// Set up detection sphere
+
+	DetectionSphere = CreateDefaultSubobject<USphereComponent>(TEXT("DetectionSphere"));
+	DetectionSphere->SetupAttachment(RootComponent);
+	DetectionSphere->SetSphereRadius(120.f);
+	DetectionSphere->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	DetectionSphere->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+	DetectionSphere->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
+
+	DetectionSphere->OnComponentBeginOverlap.AddDynamic(this, &AEnemyCharacter::OnTouchAggro);
 
 	// Set up health bar widget
 	HealthBarWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("HealthBarWidget"));
@@ -60,6 +73,9 @@ AEnemyCharacter::AEnemyCharacter()
 void AEnemyCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+
+	OriginalLocation = GetActorLocation();
+	OriginalRotation = GetActorRotation();
 	
 	CachedCameraManager = GetWorld()->GetFirstPlayerController()->PlayerCameraManager;
 
@@ -198,6 +214,21 @@ void AEnemyCharacter::BeginPlay()
 	}
 }
 
+void AEnemyCharacter::OnTouchAggro(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	if (!bPlayerDetected && OtherActor->ActorHasTag("Player"))
+	{
+		AEnemyAIController* AICon = Cast<AEnemyAIController>(GetController());
+		if (!AICon) return;
+
+		UBlackboardComponent* Blackboard = AICon->GetBlackboardComponent();
+		if (!Blackboard) return;
+
+		Blackboard->SetValueAsBool(HasLineofSightKey, true);
+		Blackboard->SetValueAsObject(EnemyActorKey, OtherActor);
+	}
+}
+
 // Called every frame
 void AEnemyCharacter::Tick(float DeltaTime)
 {
@@ -224,6 +255,9 @@ void AEnemyCharacter::Tick(float DeltaTime)
 		CastBarWidget->SetWorldRotation(LookAt);
 	}
 
+	// Debug prupose, display detection sphere radius
+	DrawDebugSphere(GetWorld(), GetActorLocation(), DetectionSphere->GetScaledSphereRadius(), 12, FColor::Red);
+
 	// Allows enemy to attack once they stop chasing player
 	bCanAttack = GetVelocity().IsZero();
 }
@@ -244,7 +278,7 @@ void AEnemyCharacter::RecieveDamage_Implementation(float DamageAmount)
 	}
 }
 
-void AEnemyCharacter::UpdateWalkSpeed(float NewSpeed)
+void AEnemyCharacter::UpdateMovementSpeed(float NewSpeed)
 {
 	GetCharacterMovement()->MaxWalkSpeed = NewSpeed;
 }
@@ -306,6 +340,45 @@ void AEnemyCharacter::HideHealthBar()
 		CachedHealthBar->SetVisibility(ESlateVisibility::Hidden);
 		CachedRageBar->SetVisibility(ESlateVisibility::Hidden);
 	}
+}
+
+void AEnemyCharacter::ResetEnemy()
+{
+	// This function can be called to reset all enemies in the level
+
+	bCanAttack = false;
+
+	if (HealthComponent)
+		HealthComponent->ResetHealth();
+
+	if (CombatComponent)
+		CombatComponent->ResetRage();
+
+	// Reset blackboard values
+	AEnemyAIController* AICon = Cast<AEnemyAIController>(GetController());
+	if (AICon)
+	{
+		UBlackboardComponent* Blackboard = AICon->GetBlackboardComponent();
+		if (Blackboard)
+		{
+			Blackboard->SetValueAsBool(HasLineofSightKey, false);
+			Blackboard->SetValueAsObject(EnemyActorKey, nullptr);
+		}
+		else
+		{
+			UE_LOG(LogEnemyCharacter, Error, TEXT("'%s' Failed to find blackboard component to reset blackboard values!"), *GetNameSafe(this));
+		}
+	}
+	else
+	{
+		UE_LOG(LogEnemyCharacter, Error, TEXT("'%s' Failed to cast controller to AEnemyAIController to reset blackboard values!"), *GetNameSafe(this));
+	}
+
+	CombatComponent->InterruptCast();
+	CombatComponent->CurrentAbilityData = nullptr;
+
+	SetActorLocation(OriginalLocation);
+	SetActorRotation(OriginalRotation);
 }
 
 bool AEnemyCharacter::CanUseAbility(UAbilityData* AbilityData)

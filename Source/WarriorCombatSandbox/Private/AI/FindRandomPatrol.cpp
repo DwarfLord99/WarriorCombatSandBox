@@ -15,7 +15,7 @@ EBTNodeResult::Type UFindRandomPatrol::ExecuteTask(UBehaviorTreeComponent& Owner
 	{
 		UE_LOG(LogTemp, Warning, TEXT("'%s' is executing FindRandomPatrol task."), *EnemyCharacter->GetName());
 
-		EnemyCharacter->UpdateWalkSpeed(PatrolSpeed);
+		EnemyCharacter->UpdateMovementSpeed(EnemyCharacter->PatrolSpeed);
 
 		FVector EnemyLocation = EnemyCharacter->GetActorLocation();
 

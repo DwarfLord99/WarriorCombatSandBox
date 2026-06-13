@@ -6,6 +6,7 @@
 #include "GameFramework/Character.h"
 #include "Logging/LogMacros.h"
 #include "Character/Components/HealthComponent.h"
+#include "Components/SphereComponent.h"
 #include "Combat/CombatComponent.h"
 #include "Combat/AbilityData.h"
 #include "Combat/Damageable.h"
@@ -27,6 +28,9 @@ class WARRIORCOMBATSANDBOX_API AEnemyCharacter : public ACharacter, public IDama
 	// Health Component
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Health, meta = (AllowPrivateAccess = "true"))
 	UHealthComponent* HealthComponent;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Detection, meta = (AllowPrivateAccess = "true"))
+	USphereComponent* DetectionSphere;
 
 public:
 
@@ -78,6 +82,16 @@ protected:
 
 	FTimerHandle HealthBarHideTimer;
 
+	// Aggro on player detection
+	UPROPERTY(EditAnywhere, Category = "AI")
+	FName HasLineofSightKey = "HasLineofSight";
+
+	UPROPERTY(EditAnywhere, Category = "AI")
+	FName EnemyActorKey = "EnemyActor";
+
+	UFUNCTION()
+	void OnTouchAggro(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -94,7 +108,13 @@ public:
 	UAbilityData* HeavyAttackData;
 
 	UFUNCTION()
-	void UpdateWalkSpeed(float NewSpeed);
+	void UpdateMovementSpeed(float NewSpeed);
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
+	float PatrolSpeed = 125.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
+	float PursueSpeed = 300.f;
 
 	UFUNCTION()
 	void HandleDeath();
@@ -116,6 +136,15 @@ public:
 
 	UFUNCTION()
 	void HideHealthBar();
+
+	UFUNCTION(BlueprintCallable, CAtegory = "Enemy")
+	void ResetEnemy();
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Enemy")
+	FVector OriginalLocation;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Enemy")
+	FRotator OriginalRotation;
 
 	UFUNCTION(BlueprintCallable, Category = "Combat")
 	bool CanUseAbility(UAbilityData* AbilityData);

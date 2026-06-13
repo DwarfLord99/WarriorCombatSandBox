@@ -18,9 +18,6 @@ public:
 	virtual EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
 
 	UPROPERTY(EditAnywhere, Category = "Patrol")
-	float PatrolSpeed = 125.0f;
-
-	UPROPERTY(EditAnywhere, Category = "Patrol")
 	float PatrolRadius = 1000.0f;
 
 	UPROPERTY(EditAnywhere, Category = "Patrol")

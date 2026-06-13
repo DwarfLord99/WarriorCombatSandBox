@@ -12,7 +12,9 @@
 #include "EnhancedInputSubsystems.h"
 #include "Combat/AbilityInputSystem.h"
 #include "InputActionValue.h"
+#include "Character/Enemy/EnemyCharacter.h"
 #include "WarriorCombatSandbox/WarriorCombatSandbox.h"
+#include <Kismet/GameplayStatics.h>
 
 DEFINE_LOG_CATEGORY(LogWarriorCharacter);
 
@@ -110,6 +112,8 @@ void AWarriorCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
+	CurrentCheckpoint = GetActorTransform();
+
 	APlayerController* PlayerController = Cast<APlayerController>(GetController());
 	if (PlayerController)
 	{
@@ -131,6 +135,7 @@ void AWarriorCharacter::BeginPlay()
 	if (HealthComponent)
 	{
 		HealthComponent->OnHealthChanged.AddDynamic(this, &AWarriorCharacter::HandleHealthChanged);
+		HealthComponent->OnDeath.AddDynamic(this, &AWarriorCharacter::HandleDeath);
 	}
 	else
 	{
@@ -241,6 +246,34 @@ void AWarriorCharacter::HandleRageChanged(float Current, float Max)
 	}
 }
 
+void AWarriorCharacter::HandleDeath()
+{
+	bIsDead = true;
+
+	// Disable input
+	if (APlayerController* PlayerController = Cast<APlayerController>(GetController()))
+	{
+		PlayerController->DisableInput(PlayerController);
+	}
+
+	// Disable collision
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	GetCharacterMovement()->DisableMovement();
+
+	// Play death animation
+	if (DeathMontage)
+	{
+		UAnimInstance* Anim = GetMesh()->GetAnimInstance();
+		if (Anim)
+		{
+			Anim->Montage_Play(DeathMontage);
+		}
+	}
+
+	OnPlayerDeath();
+}
+
 void AWarriorCharacter::DoMove(float Right, float Forward)
 {
 	if (GetController() != nullptr)
@@ -290,4 +323,54 @@ void AWarriorCharacter::DoAttack(EAbilityInput InputType)
 	}
 
 	AbilitySystem->HandleInput(InputType);
+}
+
+void AWarriorCharacter::RespawnPlayer()
+{
+	bIsDead = false;
+
+	if (HealthComponent)
+		HealthComponent->ResetHealth();
+
+	if (CombatComponent)
+		CombatComponent->ResetRage();
+
+	SetActorTransform(CurrentCheckpoint);
+
+	// Re-enable input
+	if (APlayerController* PlayerController = Cast<APlayerController>(GetController()))
+	{
+		PlayerController->EnableInput(PlayerController);
+	}
+
+	// Re-enable collision
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	GetMesh()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+
+	// Re-enable movement
+	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
+
+	// Update the HUD with the reset health and rage values
+	if (PlayerHUD)
+	{
+		PlayerHUD->UpdateHealth(HealthComponent->GetCurrentHealth(), HealthComponent->GetMaxHealth());
+		PlayerHUD->UpdateRage(CombatComponent->GetCurrentRage(), CombatComponent->GetMaxRage());
+	}
+
+	// Reset enemies
+	TArray<AActor*> EnemyActors;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AEnemyCharacter::StaticClass(), EnemyActors);
+
+	for (AActor* Actor : EnemyActors)
+	{
+		if (AEnemyCharacter* Enemy = Cast<AEnemyCharacter>(Actor))
+		{
+			Enemy->ResetEnemy();
+		}
+	}
+}
+
+void AWarriorCharacter::UpdateCheckpoint(const FTransform& NewCheckpoint)
+{
+	CurrentCheckpoint = NewCheckpoint;
 }

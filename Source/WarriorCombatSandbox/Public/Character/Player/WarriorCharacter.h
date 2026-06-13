@@ -92,6 +92,9 @@ protected:
 	UPROPERTY()
 	AWeapon* EquippedWeapon;
 
+	UPROPERTY(EditDefaultsOnly, Category = "AnimMontage")
+	UAnimMontage* DeathMontage;
+
 public:
 
 	// Sets default values for this character's properties
@@ -139,6 +142,12 @@ protected:
 	UFUNCTION()
 	void HandleRageChanged(float Current, float Max);
 
+	UFUNCTION()
+	void HandleDeath();
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	bool bIsDead = false;
+
 public:	
 
 	// Handle Movement input
@@ -159,12 +168,30 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Input")
 	virtual void DoAttack(EAbilityInput InputType);
 
+	UFUNCTION(BlueprintCallable, Category = "Player")
+	void RespawnPlayer();
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnPlayerDeath();
+
 	// Ability System Component
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Abilities, meta = (AllowPrivateAccess = "true"))
 	UAbilitySystemComponent* AbilitySystem;
 
 	UPROPERTY()
 	APlayerHUD* PlayerHUD;
+
+	UPROPERTY(EditAnywhere, Category = "Player")
+	FVector RespawnLocation;
+
+	UPROPERTY(EditAnywhere, Category = "Player")
+	FRotator RespawnRotation;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Checkpoint")
+	FTransform CurrentCheckpoint;
+
+	UFUNCTION(BlueprintCallable, Category = "Checkpoint")
+	void UpdateCheckpoint(const FTransform& NewCheckpoint);
 
 public:
 
@@ -176,4 +203,7 @@ public:
 
 	/** Returns Weapon subobject **/
 	FORCEINLINE AWeapon* GetEquippedWeapon() const { return EquippedWeapon; }
+
+	/** Returns Death State **/
+	FORCEINLINE bool IsDead() const { return bIsDead; }
 };

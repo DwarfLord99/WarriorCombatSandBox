@@ -118,6 +118,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Combat")
 	bool IsAbilityInterruptible() const;
 
+	UFUNCTION(BlueprintCallable, Category = "Combat")
+	void ResetRage() { CurrentRage = 0.f; OnRageChanged.Broadcast(CurrentRage, 0.f); }
+
 	UPROPERTY()
 	TMap<UAbilityData*, float> CooldownTimers;
 

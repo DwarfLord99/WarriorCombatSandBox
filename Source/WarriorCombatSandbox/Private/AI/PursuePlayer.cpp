@@ -11,35 +11,15 @@
 EBTNodeResult::Type UPursuePlayer::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
 	AAIController* AIController = OwnerComp.GetAIOwner();
-	if (!AIController)
-	{
-		return EBTNodeResult::Failed;
-	}
+	if (!AIController) return EBTNodeResult::Failed;
 
 	UBlackboardComponent* BlackboardComp = OwnerComp.GetBlackboardComponent();
-	if (!BlackboardComp)
-	{
-		return EBTNodeResult::Failed;
-	}
+	if (!BlackboardComp) return EBTNodeResult::Failed;
 
-	UObject* TargetObject = BlackboardComp->GetValueAsObject(EnemyActorKey.SelectedKeyName);
-	AActor* TargetActor = Cast<AActor>(TargetObject);
+	AActor* TargetActor = Cast<AActor>(BlackboardComp->GetValueAsObject(EnemyActorKey.SelectedKeyName));
+	if (!TargetActor) return EBTNodeResult::Failed;
 
-	if (!TargetActor)
-	{
-		return EBTNodeResult::Failed;
-	}
+	AIController->MoveToActor(TargetActor, AttackRange, true);
 
-	AEnemyCharacter* Self = Cast<AEnemyCharacter>(AIController->GetPawn());
-
-	EPathFollowingRequestResult::Type MoveToResult = AIController->MoveToActor(TargetActor, AttackRange, true, true, true, 0, true);
-
-	if (MoveToResult)
-	{
-		Self->UpdateWalkSpeed(ChaseSpeed);
-		Self->bPlayerDetected = true;
-		return EBTNodeResult::Succeeded;
-	}
-
-	return EBTNodeResult::Failed;
+	return EBTNodeResult::Succeeded;
 }

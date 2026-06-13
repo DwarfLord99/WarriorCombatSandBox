@@ -194,6 +194,13 @@ void UCombatComponent::FinishCast()
 	StartCooldown(CastingAbilityData);
 	CastingAbilityData = nullptr;
 
+	// Re-enable movement after casting
+	ACharacter* OwnerCharacter = Cast<ACharacter>(GetOwner());
+	if (OwnerCharacter)
+	{
+		OwnerCharacter->GetCharacterMovement()->SetMovementMode(MOVE_Walking);
+	}
+
 	OnFinishCast.Broadcast();
 }
 
@@ -210,6 +217,13 @@ void UCombatComponent::InterruptCast()
 	CooldownTimers.Add(CastingAbilityData, CastingAbilityData->CooldownTime);
 
 	CastingAbilityData = nullptr;
+
+	// Re-enable movement after interrupting
+	ACharacter* OwnerCharacter = Cast<ACharacter>(GetOwner());
+	if (OwnerCharacter)
+	{
+		OwnerCharacter->GetCharacterMovement()->SetMovementMode(MOVE_Walking);
+	}
 
 	OnInterruptCast.Broadcast();
 }
@@ -291,6 +305,13 @@ void UCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 	if (bIsCasting && CastingAbilityData)
 	{
 		CastTimer += DeltaTime;
+
+		// If casting, stop movement
+		ACharacter* OwnerCharacter = Cast<ACharacter>(GetOwner());
+			if (OwnerCharacter)
+			{
+				OwnerCharacter->GetCharacterMovement()->DisableMovement();
+			}
 
 		if (CastTimer >= CastingAbilityData->CastTime)
 		{

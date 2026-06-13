@@ -63,5 +63,8 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Health")
 	void HandleDeath();
+
+	UFUNCTION(BlueprintCallable, Category = "Health")
+	void ResetHealth();
 		
 };

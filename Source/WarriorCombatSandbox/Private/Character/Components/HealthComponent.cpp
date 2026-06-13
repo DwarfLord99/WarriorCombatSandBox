@@ -101,4 +101,11 @@ void UHealthComponent::HandleDeath()
 	OnDeath.Broadcast();
 }
 
+void UHealthComponent::ResetHealth()
+{
+	bIsDead = false;
+	CurrentHealth = MaxHealth;
+	OnHealthChanged.Broadcast(CurrentHealth, 0.f);
+}
+
 

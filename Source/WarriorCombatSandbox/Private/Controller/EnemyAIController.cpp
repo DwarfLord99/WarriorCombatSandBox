@@ -14,7 +14,7 @@ AEnemyAIController::AEnemyAIController()
 	{
 		SightConfig->SightRadius = 1000.0f;
 		SightConfig->LoseSightRadius = 1200.0f;
-		SightConfig->PeripheralVisionAngleDegrees = 45.0f;
+		SightConfig->PeripheralVisionAngleDegrees = 60.0f;
 
 		PerceptionComponent->ConfigureSense(*SightConfig);
 		PerceptionComponent->SetDominantSense(SightConfig->GetSenseImplementation());

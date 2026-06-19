@@ -64,13 +64,6 @@ AWarriorCharacter::AWarriorCharacter()
 // Called to bind functionality to input
 void AWarriorCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
-	UE_LOG(LogTemp, Warning, TEXT("BasicAttackAction: %s"), *GetNameSafe(BasicAttackAction));
-	UE_LOG(LogTemp, Warning, TEXT("HeavyAttackAction: %s"), *GetNameSafe(HeavyAttackAction));
-	UE_LOG(LogTemp, Warning, TEXT("AbilitySlot1Action: %s"), *GetNameSafe(AbilitySlot1Action));
-	UE_LOG(LogTemp, Warning, TEXT("AbilitySlot2Action: %s"), *GetNameSafe(AbilitySlot2Action));
-	UE_LOG(LogTemp, Warning, TEXT("AbilitySlot3Action: %s"), *GetNameSafe(AbilitySlot3Action));
-
-
 	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent))
 	{
 		// Jumping
@@ -83,6 +76,9 @@ void AWarriorCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 
 		// Looking
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AWarriorCharacter::Look);
+
+		// Interacting
+		EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Started, this, &AWarriorCharacter::DoInteract);
 
 		// Sprinting
 		EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Triggered, this, &AWarriorCharacter::Sprint);
@@ -98,14 +94,6 @@ void AWarriorCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 	{
 		UE_LOG(LogWarriorCharacter, Error, TEXT("'%s' Failed to find an Enhanced Input component!"), *GetNameSafe(this));
 	}
-
-	UE_LOG(LogTemp, Warning, TEXT("BasicAttackAction: %s"), *GetNameSafe(BasicAttackAction));
-	UE_LOG(LogTemp, Warning, TEXT("HeavyAttackAction: %s"), *GetNameSafe(HeavyAttackAction));
-	UE_LOG(LogTemp, Warning, TEXT("AbilitySlot1Action: %s"), *GetNameSafe(AbilitySlot1Action));
-	UE_LOG(LogTemp, Warning, TEXT("AbilitySlot2Action: %s"), *GetNameSafe(AbilitySlot2Action));
-	UE_LOG(LogTemp, Warning, TEXT("AbilitySlot3Action: %s"), *GetNameSafe(AbilitySlot3Action));
-
-
 }
 
 void AWarriorCharacter::BeginPlay()
@@ -179,6 +167,19 @@ void AWarriorCharacter::BeginPlay()
 		{
 			UE_LOG(LogWarriorCharacter, Error, TEXT("'%s' Failed to find Combat Component to set equipped weapon!"), *GetNameSafe(this));
 		}
+	}
+}
+
+void AWarriorCharacter::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+	// Update interaction target every 0.05 seconds to avoid doing expensive line traces every frame
+	InteractionUpdateTimer += DeltaTime;
+	if (InteractionUpdateTimer >= 0.05f)
+	{
+		UpdateInteractionTarget();
+		InteractionUpdateTimer = 0.f;
 	}
 }
 
@@ -325,6 +326,17 @@ void AWarriorCharacter::DoAttack(EAbilityInput InputType)
 	AbilitySystem->HandleInput(InputType);
 }
 
+void AWarriorCharacter::DoInteract()
+{
+	UE_LOG(LogTemp, Warning, TEXT("DoInteract fired"));
+
+
+	if (ActiveInteractable && ActiveInteractable->CanInteract())
+	{
+		ActiveInteractable->Interact();
+	}
+}
+
 void AWarriorCharacter::RespawnPlayer()
 {
 	bIsDead = false;
@@ -373,4 +385,64 @@ void AWarriorCharacter::RespawnPlayer()
 void AWarriorCharacter::UpdateCheckpoint(const FTransform& NewCheckpoint)
 {
 	CurrentCheckpoint = NewCheckpoint;
+}
+
+void AWarriorCharacter::UpdateInteractionTarget()
+{
+	FVector Start = GetActorLocation() + FVector(0.f, 0.f, InteractHeight); // Start from the character's chest level
+	FVector End = Start + (GetActorForwardVector() * InteractRange);
+
+	FHitResult Hit;
+	FCollisionQueryParams Params;
+	Params.AddIgnoredActor(this);
+
+	bool bHit = GetWorld()->LineTraceSingleByChannel(Hit, Start, End, ECC_GameTraceChannel1, Params);
+
+	AInteractableBase* NewTarget = nullptr;
+
+	if (bHit)
+	{
+		AInteractableBase* HitInteractable = Cast<AInteractableBase>(Hit.GetActor());
+		if (HitInteractable && NearbyInteractables.Contains(HitInteractable))
+		{
+			NewTarget = HitInteractable;
+		}
+	}
+
+	// Handle focus switching
+	if (NewTarget != ActiveInteractable)
+	{
+		if (ActiveInteractable)
+			ActiveInteractable->OnUnfocus();
+
+		ActiveInteractable = NewTarget;
+
+		if (ActiveInteractable)
+			ActiveInteractable->OnFocus();
+	}
+
+	// Debug line to visualize interaction ray
+#if WITH_EDITOR
+	FColor LineColor = bHit ? FColor::Green : FColor::Red;
+	DrawDebugLine(GetWorld(), Start, End, LineColor, false, 0.1f, 0, 1.f);
+#endif
+}
+
+void AWarriorCharacter::AddNearbyInteractable(AInteractableBase* Interactable)
+{
+	NearbyInteractables.AddUnique(Interactable);
+	UE_LOG(LogTemp, Warning, TEXT("Nearby added: %s"), *Interactable->GetName());
+
+}
+
+void AWarriorCharacter::RemoveNearbyInteractable(AInteractableBase* Interactable)
+{
+	NearbyInteractables.Remove(Interactable);
+
+	// If the one leaving range was the active one, clear it
+	if (ActiveInteractable == Interactable)
+	{
+		ActiveInteractable->OnUnfocus();
+		ActiveInteractable = nullptr;
+	}
 }

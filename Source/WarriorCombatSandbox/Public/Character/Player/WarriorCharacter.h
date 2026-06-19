@@ -12,6 +12,7 @@
 #include "Combat/AbilitySystemComponent.h"
 #include "Weapons/Weapon.h"
 #include "UI/PlayerHUD.h"
+#include "Actors/Gameplay/Interactable/InteractableBase.h"
 #include "WarriorCharacter.generated.h"
 
 class USpringArmComponent;
@@ -64,6 +65,10 @@ protected:
 	UPROPERTY(EditAnywhere, Category = Input)
 	UInputAction* SprintAction;
 
+	// Interact Input Action
+	UPROPERTY(EditAnywhere, Category = Input)
+	UInputAction* InteractAction;
+
 	// Basic Attack Input Action
 	UPROPERTY(EditAnywhere, Category = Input)
 	UInputAction* BasicAttackAction;
@@ -95,6 +100,15 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "AnimMontage")
 	UAnimMontage* DeathMontage;
 
+	UPROPERTY(EditAnywhere, Category = "Interactable")
+	float InteractHeight = 0.f;
+
+	UPROPERTY(EditAnywhere, Category = "Interactable")
+	float InteractRange = 500.f;
+
+	UPROPERTY(EditAnywhere, Category = "Interactable")
+	AInteractableBase* ActiveInteractable;
+
 public:
 
 	// Sets default values for this character's properties
@@ -107,6 +121,9 @@ protected:
 
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+
+	// Called every frame
+	virtual void Tick(float DeltaTime) override;
 
 protected:
 
@@ -148,6 +165,9 @@ protected:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
 	bool bIsDead = false;
 
+	UPROPERTY()
+	float InteractionUpdateTimer = 0.f;
+
 public:	
 
 	// Handle Movement input
@@ -167,6 +187,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Input")
 	virtual void DoAttack(EAbilityInput InputType);
+
+	UFUNCTION(BlueprintCallable, Category = "Input")
+	virtual void DoInteract();
 
 	UFUNCTION(BlueprintCallable, Category = "Player")
 	void RespawnPlayer();
@@ -192,6 +215,18 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Checkpoint")
 	void UpdateCheckpoint(const FTransform& NewCheckpoint);
+
+	UPROPERTY()
+	TArray<AInteractableBase*> NearbyInteractables;
+
+	UFUNCTION(BlueprintCallable, Category = "Interaction")
+	void UpdateInteractionTarget();
+
+	UFUNCTION(BlueprintCallable, Category = "Interaction")
+	void AddNearbyInteractable(AInteractableBase* Interactable);
+
+	UFUNCTION(BlueprintCallable, Category = "Interaction")
+	void RemoveNearbyInteractable(AInteractableBase* Interactable);
 
 public:
 
